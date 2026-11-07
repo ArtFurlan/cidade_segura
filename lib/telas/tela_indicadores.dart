@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../componentes/grafico_indicador.dart';
+import '../componentes/grafico_energia.dart';
+import '../componentes/grafico_temperatura.dart';
+import '../componentes/grafico_umidade.dart';
+
 class TelaIndicadores extends StatelessWidget {
   const TelaIndicadores({super.key});
 
@@ -84,6 +89,18 @@ class CartaoDetalhado extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Widget grafico;
+
+    if (titulo == 'Consumo de agua') {
+      grafico = const GraficoIndicador();
+    } else if (titulo == 'Consumo de energia') {
+      grafico = const GraficoEnergia();
+    } else if (titulo == 'Temperatura') {
+      grafico = const GraficoTemperatura();
+    } else {
+      grafico = const GraficoUmidade();
+    }
+
     return Card(
       elevation: 3,
       child: Padding(
@@ -121,27 +138,7 @@ class CartaoDetalhado extends StatelessWidget {
               style: const TextStyle(fontSize: 14, color: Colors.grey),
             ),
             const SizedBox(height: 16),
-            Container(
-              height: 100,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: cor.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.insert_chart_outlined, color: cor, size: 32),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Grafico em desenvolvimento',
-                      style: TextStyle(fontSize: 13, color: Colors.black54),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            grafico,
           ],
         ),
       ),
