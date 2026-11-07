@@ -4,9 +4,31 @@ import '../componentes/grafico_indicador.dart';
 import '../componentes/grafico_energia.dart';
 import '../componentes/grafico_temperatura.dart';
 import '../componentes/grafico_umidade.dart';
+import '../services/clima_service.dart';
 
-class TelaIndicadores extends StatelessWidget {
+class TelaIndicadores extends StatefulWidget {
   const TelaIndicadores({super.key});
+
+  @override
+  State<TelaIndicadores> createState() => _TelaIndicadoresState();
+}
+
+class _TelaIndicadoresState extends State<TelaIndicadores> {
+  final ClimaService climaService = ClimaService();
+
+  late Future<Map<String, dynamic>> dadosClima;
+
+  @override
+  void initState() {
+    super.initState();
+    dadosClima = climaService.buscarClima();
+  }
+
+  void atualizarClima() {
+    setState(() {
+      dadosClima = climaService.buscarClima();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,14 +52,14 @@ class TelaIndicadores extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           const Text(
-            'Dados simulados para demonstracao',
+            'Agua e energia: dados simulados',
             style: TextStyle(fontSize: 12, color: Colors.blueGrey),
           ),
           const SizedBox(height: 24),
           const CartaoDetalhado(
             titulo: 'Consumo de agua',
             valor: '1.250 m3',
-            descricao: 'Consumo nas ultimas 24 horas',
+            descricao: 'Consumo simulado nas ultimas 24 horas',
             icone: Icons.water_drop,
             cor: Colors.blue,
           ),
@@ -45,25 +67,110 @@ class TelaIndicadores extends StatelessWidget {
           const CartaoDetalhado(
             titulo: 'Consumo de energia',
             valor: '3.480 kWh',
-            descricao: 'Consumo nas ultimas 24 horas',
+            descricao: 'Consumo simulado nas ultimas 24 horas',
             icone: Icons.bolt,
             cor: Colors.orange,
           ),
-          const SizedBox(height: 16),
-          const CartaoDetalhado(
-            titulo: 'Temperatura',
-            valor: '28 C',
-            descricao: 'Temperatura atual simulada',
-            icone: Icons.thermostat,
-            cor: Colors.deepOrange,
+          const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Expanded(
+                child: Text(
+                  'Clima em Sao Paulo',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF142B49),
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: atualizarClima,
+                icon: const Icon(Icons.refresh),
+                tooltip: 'Atualizar clima',
+                color: Colors.blue,
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Valores atuais consultados na API Open-Meteo',
+            style: TextStyle(fontSize: 12, color: Colors.blueGrey),
           ),
           const SizedBox(height: 16),
-          const CartaoDetalhado(
-            titulo: 'Umidade do ar',
-            valor: '65%',
-            descricao: 'Umidade relativa simulada',
-            icone: Icons.cloud,
-            cor: Colors.teal,
+          FutureBuilder<Map<String, dynamic>>(
+            future: dadosClima,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(30),
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              }
+
+              if (snapshot.hasError || !snapshot.hasData) {
+                return Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      children: [
+                        const Icon(
+                          Icons.error_outline,
+                          color: Colors.red,
+                          size: 32,
+                        ),
+                        const SizedBox(height: 12),
+                        const Text('Nao foi possivel carregar o clima.'),
+                        const SizedBox(height: 12),
+                        ElevatedButton(
+                          onPressed: atualizarClima,
+                          child: const Text('Tentar novamente'),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              final dados = snapshot.data!;
+
+              final temperatura = (dados['temperatura'] as num).toStringAsFixed(
+                1,
+              );
+
+              final umidade = (dados['umidade'] as num).round();
+
+              final horario = dados['horario'].toString();
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Atualizacao da API: $horario',
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 12),
+                  CartaoDetalhado(
+                    titulo: 'Temperatura',
+                    valor: '$temperatura C',
+                    descricao: 'Temperatura atual - Open-Meteo',
+                    icone: Icons.thermostat,
+                    cor: Colors.deepOrange,
+                  ),
+                  const SizedBox(height: 16),
+                  CartaoDetalhado(
+                    titulo: 'Umidade do ar',
+                    valor: '$umidade%',
+                    descricao: 'Umidade atual - Open-Meteo',
+                    icone: Icons.cloud,
+                    cor: Colors.teal,
+                  ),
+                ],
+              );
+            },
           ),
         ],
       ),
@@ -139,6 +246,11 @@ class CartaoDetalhado extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             grafico,
+            const SizedBox(height: 8),
+            const Text(
+              'Grafico com dados simulados dos ultimos 7 dias',
+              style: TextStyle(fontSize: 11, color: Colors.blueGrey),
+            ),
           ],
         ),
       ),
