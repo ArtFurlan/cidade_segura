@@ -1,10 +1,26 @@
 import 'package:flutter/material.dart';
 
+import '../dados/dados_simulados.dart';
+import '../models/alerta.dart';
+import '../services/alerta_service.dart';
+
 class TelaAlertas extends StatelessWidget {
   const TelaAlertas({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final alertaService = AlertaService();
+
+    final alertasAtuais = alertaService.analisarIndicadores(
+      consumoAgua: DadosSimulados.consumoAguaAtual,
+      consumoEnergia: DadosSimulados.consumoEnergiaAtual,
+    );
+
+    final alertasTendencia = alertaService.analisarTendencias(
+      historicoAgua: DadosSimulados.historicoAgua,
+      historicoEnergia: DadosSimulados.historicoEnergia,
+    );
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -20,48 +36,101 @@ class TelaAlertas extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           const Text(
-            'Acompanhe possiveis riscos identificados.',
+            'Situacoes identificadas a partir dos indicadores.',
             style: TextStyle(fontSize: 14, color: Colors.grey),
           ),
           const SizedBox(height: 8),
           const Text(
-            'Alertas simulados para demonstracao',
+            'Analise demonstrativa com dados e limites simulados',
             style: TextStyle(fontSize: 12, color: Colors.blueGrey),
           ),
           const SizedBox(height: 24),
-          const CartaoAlerta(
-            titulo: 'Risco de alagamento',
-            nivel: 'Alto',
-            confianca: 'Alta (simulada)',
-            justificativa:
-                'Previsao de chuva intensa e historico de alagamentos.',
-            limitacao: 'Os dados sao simulados e a previsao pode mudar.',
-            recomendacao: 'Verificar areas vulneraveis e acompanhar o clima.',
-            icone: Icons.water,
-            cor: Colors.red,
+          const Text(
+            'Alertas atuais',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF142B49),
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Indicadores que ultrapassaram os limites definidos.',
+            style: TextStyle(fontSize: 13, color: Colors.grey),
           ),
           const SizedBox(height: 16),
-          const CartaoAlerta(
-            titulo: 'Consumo elevado de agua',
-            nivel: 'Medio',
-            confianca: 'Media (simulada)',
-            justificativa: 'Consumo acima da media historica da regiao.',
-            limitacao: 'O alerta nao confirma a existencia de vazamentos.',
-            recomendacao: 'Verificar os registros de consumo da regiao.',
-            icone: Icons.water_drop,
-            cor: Colors.orange,
+          if (alertasAtuais.isEmpty)
+            const Card(
+              child: Padding(
+                padding: EdgeInsets.all(20),
+                child: Row(
+                  children: [
+                    Icon(Icons.check_circle_outline, color: Colors.green),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Nenhum indicador ultrapassou os limites definidos.',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: alertasAtuais.length,
+              separatorBuilder: (context, index) {
+                return const SizedBox(height: 16);
+              },
+              itemBuilder: (context, index) {
+                return CartaoAlerta(alerta: alertasAtuais[index]);
+              },
+            ),
+          const SizedBox(height: 32),
+          const Text(
+            'Alertas de tendencia',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF142B49),
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Estimativas para o proximo dia com base no mesmo '
+            'historico simulado apresentado nos graficos.',
+            style: TextStyle(fontSize: 13, color: Colors.grey),
           ),
           const SizedBox(height: 16),
-          const CartaoAlerta(
-            titulo: 'Aumento no consumo de energia',
-            nivel: 'Baixo',
-            confianca: 'Baixa (simulada)',
-            justificativa: 'Tendencia de crescimento no consumo de energia.',
-            limitacao:
-                'A analise ainda nao considera todos os fatores sazonais.',
-            recomendacao: 'Acompanhar a evolucao do consumo nos proximos dias.',
-            icone: Icons.bolt,
-            cor: Colors.green,
+          if (alertasTendencia.isEmpty)
+            const Card(
+              child: Padding(
+                padding: EdgeInsets.all(20),
+                child: Text(
+                  'Nenhuma tendencia ultrapassou os limites definidos.',
+                ),
+              ),
+            )
+          else
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: alertasTendencia.length,
+              separatorBuilder: (context, index) {
+                return const SizedBox(height: 16);
+              },
+              itemBuilder: (context, index) {
+                return CartaoAlerta(alerta: alertasTendencia[index]);
+              },
+            ),
+          const SizedBox(height: 24),
+          const Text(
+            'Os alertas apoiam a analise humana. '
+            'As estimativas nao garantem eventos futuros '
+            'e nao devem gerar decisoes automaticas.',
+            style: TextStyle(fontSize: 12, color: Colors.blueGrey),
           ),
         ],
       ),
@@ -70,26 +139,32 @@ class TelaAlertas extends StatelessWidget {
 }
 
 class CartaoAlerta extends StatelessWidget {
-  final String titulo;
-  final String nivel;
-  final String confianca;
-  final String justificativa;
-  final String limitacao;
-  final String recomendacao;
-  final IconData icone;
-  final Color cor;
+  final Alerta alerta;
 
-  const CartaoAlerta({
-    super.key,
-    required this.titulo,
-    required this.nivel,
-    required this.confianca,
-    required this.justificativa,
-    required this.limitacao,
-    required this.recomendacao,
-    required this.icone,
-    required this.cor,
-  });
+  const CartaoAlerta({super.key, required this.alerta});
+
+  Color get cor {
+    switch (alerta.nivel) {
+      case NivelRisco.baixo:
+        return Colors.green;
+      case NivelRisco.medio:
+        return Colors.orange;
+      case NivelRisco.alto:
+        return Colors.red;
+    }
+  }
+
+  IconData get icone {
+    if (alerta.titulo.contains('agua')) {
+      return Icons.water_drop;
+    }
+
+    if (alerta.titulo.contains('energia')) {
+      return Icons.bolt;
+    }
+
+    return Icons.warning_amber;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -106,7 +181,7 @@ class CartaoAlerta extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    titulo,
+                    alerta.titulo,
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -123,22 +198,27 @@ class CartaoAlerta extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    nivel,
+                    alerta.nivelTexto,
                     style: TextStyle(color: cor, fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            Text('Nivel de risco: $nivel'),
+            Text('Nivel de risco: ${alerta.nivelTexto}'),
             const SizedBox(height: 8),
-            Text('Confianca: $confianca'),
+            Text('Confianca: ${alerta.confiancaTexto}'),
             const SizedBox(height: 8),
-            Text('Justificativa: $justificativa'),
+            Text('Justificativa: ${alerta.justificativa}'),
             const SizedBox(height: 8),
-            Text('Limitacao: $limitacao'),
+            Text('Limitacao: ${alerta.limitacao}'),
             const SizedBox(height: 8),
-            Text('Recomendacao: $recomendacao'),
+            Text('Recomendacao: ${alerta.recomendacao}'),
+            const SizedBox(height: 12),
+            Text(
+              'Fonte: ${alerta.fonte}',
+              style: const TextStyle(fontSize: 12, color: Colors.blueGrey),
+            ),
           ],
         ),
       ),

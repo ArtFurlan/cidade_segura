@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../dados/dados_simulados.dart';
 import '../services/clima_service.dart';
+import '../services/alerta_service.dart';
 
 class TelaInicio extends StatefulWidget {
   const TelaInicio({super.key});
@@ -11,6 +13,7 @@ class TelaInicio extends StatefulWidget {
 
 class _TelaInicioState extends State<TelaInicio> {
   final ClimaService climaService = ClimaService();
+  final AlertaService alertaService = AlertaService();
 
   late Future<Map<String, dynamic>> dadosClima;
 
@@ -28,6 +31,14 @@ class _TelaInicioState extends State<TelaInicio> {
 
   @override
   Widget build(BuildContext context) {
+    final consumoAgua = DadosSimulados.consumoAguaAtual;
+    final consumoEnergia = DadosSimulados.consumoEnergiaAtual;
+
+    final alertas = alertaService.analisarIndicadores(
+      consumoAgua: consumoAgua,
+      consumoEnergia: consumoEnergia,
+    );
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -64,9 +75,9 @@ class _TelaInicioState extends State<TelaInicio> {
                 children: [
                   SizedBox(
                     width: largura,
-                    child: const CartaoIndicador(
+                    child: CartaoIndicador(
                       titulo: 'Consumo de agua',
-                      valor: '1.250 m3',
+                      valor: '${consumoAgua.toStringAsFixed(0)} m3',
                       descricao: 'Simulado - ultimas 24 horas',
                       icone: Icons.water_drop,
                       cor: Colors.blue,
@@ -74,9 +85,9 @@ class _TelaInicioState extends State<TelaInicio> {
                   ),
                   SizedBox(
                     width: largura,
-                    child: const CartaoIndicador(
+                    child: CartaoIndicador(
                       titulo: 'Consumo de energia',
-                      valor: '3.480 kWh',
+                      valor: '${consumoEnergia.toStringAsFixed(0)} kWh',
                       descricao: 'Simulado - ultimas 24 horas',
                       icone: Icons.bolt,
                       cor: Colors.orange,
@@ -134,9 +145,9 @@ class _TelaInicioState extends State<TelaInicio> {
                   ),
                   SizedBox(
                     width: largura,
-                    child: const CartaoIndicador(
+                    child: CartaoIndicador(
                       titulo: 'Alertas ativos',
-                      valor: '3',
+                      valor: '${alertas.length}',
                       descricao: 'Alertas simulados',
                       icone: Icons.warning_amber,
                       cor: Colors.red,

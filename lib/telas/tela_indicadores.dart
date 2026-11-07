@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../dados/dados_simulados.dart';
 import '../componentes/grafico_indicador.dart';
 import '../componentes/grafico_energia.dart';
 import '../componentes/grafico_temperatura.dart';
@@ -32,6 +33,9 @@ class _TelaIndicadoresState extends State<TelaIndicadores> {
 
   @override
   Widget build(BuildContext context) {
+    final consumoAgua = DadosSimulados.consumoAguaAtual;
+    final consumoEnergia = DadosSimulados.consumoEnergiaAtual;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -56,17 +60,17 @@ class _TelaIndicadoresState extends State<TelaIndicadores> {
             style: TextStyle(fontSize: 12, color: Colors.blueGrey),
           ),
           const SizedBox(height: 24),
-          const CartaoDetalhado(
+          CartaoDetalhado(
             titulo: 'Consumo de agua',
-            valor: '1.250 m3',
+            valor: '${consumoAgua.toStringAsFixed(0)} m3',
             descricao: 'Consumo simulado nas ultimas 24 horas',
             icone: Icons.water_drop,
             cor: Colors.blue,
           ),
           const SizedBox(height: 16),
-          const CartaoDetalhado(
+          CartaoDetalhado(
             titulo: 'Consumo de energia',
-            valor: '3.480 kWh',
+            valor: '${consumoEnergia.toStringAsFixed(0)} kWh',
             descricao: 'Consumo simulado nas ultimas 24 horas',
             icone: Icons.bolt,
             cor: Colors.orange,

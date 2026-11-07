@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
+import '../dados/dados_simulados.dart';
+
 class GraficoIndicador extends StatelessWidget {
   const GraficoIndicador({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final historico = DadosSimulados.historicoAgua;
+
     return SizedBox(
       height: 180,
       child: LineChart(
@@ -22,15 +26,10 @@ class GraficoIndicador extends StatelessWidget {
           ),
           lineBarsData: [
             LineChartBarData(
-              spots: const [
-                FlSpot(0, 1100),
-                FlSpot(1, 1250),
-                FlSpot(2, 1180),
-                FlSpot(3, 1400),
-                FlSpot(4, 1320),
-                FlSpot(5, 1500),
-                FlSpot(6, 1250),
-              ],
+              spots: List.generate(
+                historico.length,
+                (index) => FlSpot(index.toDouble(), historico[index]),
+              ),
               isCurved: true,
               color: Colors.blue,
               barWidth: 3,
