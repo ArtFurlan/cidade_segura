@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../dados/dados_simulados.dart';
 import '../models/alerta.dart';
+import '../providers/clima_provider.dart';
 import '../services/alerta_service.dart';
 
 class TelaAlertas extends StatelessWidget {
@@ -10,6 +12,7 @@ class TelaAlertas extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final alertaService = AlertaService();
+    final climaProvider = context.watch<ClimaProvider>();
 
     final alertasAtuais = alertaService.analisarIndicadores(
       consumoAgua: DadosSimulados.consumoAguaAtual,
@@ -20,6 +23,34 @@ class TelaAlertas extends StatelessWidget {
       historicoAgua: DadosSimulados.historicoAgua,
       historicoEnergia: DadosSimulados.historicoEnergia,
     );
+
+    final temperatura = climaProvider.temperatura;
+    final umidade = climaProvider.umidade;
+
+    final climaDisponivel = temperatura != null && umidade != null;
+
+    final List<Alerta> alertasClimaticos = climaDisponivel
+        ? alertaService.analisarClima(
+            temperatura: temperatura,
+            umidade: umidade,
+          )
+        : [];
+
+    final chuvaAcumulada = climaProvider.chuvaAcumulada;
+    final maiorChuvaHoraria = climaProvider.maiorChuvaHoraria;
+    final horasAnalisadas = climaProvider.horasAnalisadas;
+
+    final previsaoDisponivel =
+        chuvaAcumulada != null &&
+        maiorChuvaHoraria != null &&
+        horasAnalisadas != null;
+
+    final List<Alerta> alertasChuva = previsaoDisponivel
+        ? alertaService.analisarPrevisaoChuva(
+            chuvaAcumulada: chuvaAcumulada,
+            maiorChuvaHoraria: maiorChuvaHoraria,
+          )
+        : [];
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -41,7 +72,7 @@ class TelaAlertas extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           const Text(
-            'Analise demonstrativa com dados e limites simulados',
+            'Dados simulados e dados meteorologicos da Open-Meteo',
             style: TextStyle(fontSize: 12, color: Colors.blueGrey),
           ),
           const SizedBox(height: 24),
@@ -55,7 +86,7 @@ class TelaAlertas extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           const Text(
-            'Indicadores que ultrapassaram os limites definidos.',
+            'Indicadores simulados que ultrapassaram os limites definidos.',
             style: TextStyle(fontSize: 13, color: Colors.grey),
           ),
           const SizedBox(height: 16),
@@ -77,17 +108,224 @@ class TelaAlertas extends StatelessWidget {
               ),
             )
           else
-            ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: alertasAtuais.length,
-              separatorBuilder: (context, index) {
-                return const SizedBox(height: 16);
-              },
-              itemBuilder: (context, index) {
-                return CartaoAlerta(alerta: alertasAtuais[index]);
-              },
+            ListaAlertas(alertas: alertasAtuais),
+          const SizedBox(height: 32),
+          const Text(
+            'Alertas meteorologicos',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF142B49),
             ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Analise da temperatura e umidade atuais da Open-Meteo.',
+            style: TextStyle(fontSize: 13, color: Colors.grey),
+          ),
+          const SizedBox(height: 16),
+          if (climaProvider.carregando && !climaDisponivel)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(24),
+                child: CircularProgressIndicator(),
+              ),
+            )
+          else if (!climaDisponivel)
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(Icons.error_outline, color: Colors.orange),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Dados climaticos indisponiveis. '
+                            'Nao foi possivel avaliar os riscos meteorologicos.',
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    ElevatedButton.icon(
+                      onPressed: climaProvider.carregando
+                          ? null
+                          : () {
+                              context.read<ClimaProvider>().atualizarClima();
+                            },
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Tentar novamente'),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else if (alertasClimaticos.isEmpty)
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(Icons.check_circle_outline, color: Colors.green),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Nenhum limite meteorologico foi ultrapassado.',
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Temperatura atual: ${temperatura.toStringAsFixed(1)} C',
+                    ),
+                    const SizedBox(height: 8),
+                    Text('Umidade atual: $umidade%'),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Isso nao significa ausencia de outros riscos climaticos.',
+                      style: TextStyle(fontSize: 12, color: Colors.blueGrey),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            ListaAlertas(alertas: alertasClimaticos),
+          if (climaDisponivel && climaProvider.erro != null) ...[
+            const SizedBox(height: 12),
+            const Text(
+              'A ultima atualizacao do clima falhou. '
+              'Os dados exibidos podem estar desatualizados.',
+              style: TextStyle(fontSize: 12, color: Colors.orange),
+            ),
+          ],
+          const SizedBox(height: 32),
+          const Text(
+            'Previsao de chuva - proximas 24 horas',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF142B49),
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Precipitacao prevista pela Open-Meteo para Sao Paulo.',
+            style: TextStyle(fontSize: 13, color: Colors.grey),
+          ),
+          const SizedBox(height: 16),
+          if (climaProvider.carregandoPrevisao && !previsaoDisponivel)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(24),
+                child: CircularProgressIndicator(),
+              ),
+            )
+          else if (!previsaoDisponivel)
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(Icons.error_outline, color: Colors.orange),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Previsao de chuva indisponivel. '
+                            'Nao foi possivel avaliar a precipitacao prevista.',
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    ElevatedButton.icon(
+                      onPressed: climaProvider.carregandoPrevisao
+                          ? null
+                          : () {
+                              context.read<ClimaProvider>().atualizarPrevisao();
+                            },
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Tentar novamente'),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else ...[
+            Card(
+              elevation: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Resumo da previsao',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Chuva acumulada prevista: '
+                      '${chuvaAcumulada.toStringAsFixed(1)} mm',
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Maior precipitacao horaria prevista: '
+                      '${maiorChuvaHoraria.toStringAsFixed(1)} mm',
+                    ),
+                    const SizedBox(height: 8),
+                    Text('Horas analisadas: $horasAnalisadas'),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Fonte: Open-Meteo. Previsoes podem mudar.',
+                      style: TextStyle(fontSize: 12, color: Colors.blueGrey),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            if (alertasChuva.isEmpty)
+              const Card(
+                child: Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Row(
+                    children: [
+                      Icon(Icons.check_circle_outline, color: Colors.green),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'A chuva acumulada prevista nao ultrapassou '
+                          'os limites ilustrativos definidos.',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              ListaAlertas(alertas: alertasChuva),
+          ],
+          if (previsaoDisponivel && climaProvider.erroPrevisao != null) ...[
+            const SizedBox(height: 12),
+            const Text(
+              'A ultima consulta da previsao falhou. '
+              'Os valores exibidos podem estar desatualizados.',
+              style: TextStyle(fontSize: 12, color: Colors.orange),
+            ),
+          ],
           const SizedBox(height: 32),
           const Text(
             'Alertas de tendencia',
@@ -114,26 +352,37 @@ class TelaAlertas extends StatelessWidget {
               ),
             )
           else
-            ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: alertasTendencia.length,
-              separatorBuilder: (context, index) {
-                return const SizedBox(height: 16);
-              },
-              itemBuilder: (context, index) {
-                return CartaoAlerta(alerta: alertasTendencia[index]);
-              },
-            ),
+            ListaAlertas(alertas: alertasTendencia),
           const SizedBox(height: 24),
           const Text(
             'Os alertas apoiam a analise humana. '
-            'As estimativas nao garantem eventos futuros '
-            'e nao devem gerar decisoes automaticas.',
+            'Os limites sao ilustrativos e as previsoes podem mudar. '
+            'Nenhuma decisao de alto impacto deve ser automatizada.',
             style: TextStyle(fontSize: 12, color: Colors.blueGrey),
           ),
         ],
       ),
+    );
+  }
+}
+
+class ListaAlertas extends StatelessWidget {
+  final List<Alerta> alertas;
+
+  const ListaAlertas({super.key, required this.alertas});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: alertas.length,
+      separatorBuilder: (context, index) {
+        return const SizedBox(height: 16);
+      },
+      itemBuilder: (context, index) {
+        return CartaoAlerta(alerta: alertas[index]);
+      },
     );
   }
 }
@@ -155,12 +404,26 @@ class CartaoAlerta extends StatelessWidget {
   }
 
   IconData get icone {
-    if (alerta.titulo.contains('agua')) {
+    final titulo = alerta.titulo.toLowerCase();
+
+    if (titulo.contains('agua')) {
       return Icons.water_drop;
     }
 
-    if (alerta.titulo.contains('energia')) {
+    if (titulo.contains('energia')) {
       return Icons.bolt;
+    }
+
+    if (titulo.contains('umidade')) {
+      return Icons.cloud;
+    }
+
+    if (titulo.contains('temperatura')) {
+      return Icons.thermostat;
+    }
+
+    if (titulo.contains('chuva')) {
+      return Icons.water;
     }
 
     return Icons.warning_amber;

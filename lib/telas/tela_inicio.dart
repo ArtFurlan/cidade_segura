@@ -11,32 +11,79 @@ class TelaInicio extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final climaProvider = context.watch<ClimaProvider>();
+    final alertaService = AlertaService();
 
     final consumoAgua = DadosSimulados.consumoAguaAtual;
     final consumoEnergia = DadosSimulados.consumoEnergiaAtual;
 
-    final alertaService = AlertaService();
-
-    final alertas = alertaService.analisarIndicadores(
+    final alertasSimulados = alertaService.analisarIndicadores(
       consumoAgua: consumoAgua,
       consumoEnergia: consumoEnergia,
     );
 
+    final temperaturaAtual = climaProvider.temperatura;
+    final umidadeAtual = climaProvider.umidade;
+
+    final climaDisponivel = temperaturaAtual != null && umidadeAtual != null;
+
+    final alertasClimaticos = climaDisponivel
+        ? alertaService.analisarClima(
+            temperatura: temperaturaAtual,
+            umidade: umidadeAtual,
+          )
+        : [];
+
+    final chuvaAcumulada = climaProvider.chuvaAcumulada;
+    final maiorChuvaHoraria = climaProvider.maiorChuvaHoraria;
+    final horasAnalisadas = climaProvider.horasAnalisadas;
+
+    final previsaoDisponivel =
+        chuvaAcumulada != null &&
+        maiorChuvaHoraria != null &&
+        horasAnalisadas == 24;
+
+    final alertasChuva = previsaoDisponivel
+        ? alertaService.analisarPrevisaoChuva(
+            chuvaAcumulada: chuvaAcumulada,
+            maiorChuvaHoraria: maiorChuvaHoraria,
+          )
+        : [];
+
+    final totalAlertas =
+        alertasSimulados.length +
+        alertasClimaticos.length +
+        alertasChuva.length;
+
+    final totalMeteorologicos = alertasClimaticos.length + alertasChuva.length;
+
+    String descricaoAlertas =
+        '${alertasSimulados.length} simulados, '
+        '$totalMeteorologicos meteorologicos';
+
+    if (!climaDisponivel || !previsaoDisponivel) {
+      descricaoAlertas = 'Contagem parcial - dados indisponiveis';
+    } else if (climaProvider.erro != null ||
+        climaProvider.erroPrevisao != null) {
+      descricaoAlertas = 'Contagem com dados possivelmente antigos';
+    }
+
     String temperatura = '...';
     String umidade = '...';
-    String descricao = 'Carregando clima';
+    String descricaoClima = 'Carregando clima';
 
     if (climaProvider.erro != null && climaProvider.dadosClima == null) {
       temperatura = '--';
       umidade = '--';
-      descricao = 'Erro ao consultar API';
+      descricaoClima = 'Erro ao consultar API';
     } else if (climaProvider.dadosClima != null) {
       temperatura =
           '${climaProvider.temperatura?.toStringAsFixed(1) ?? '--'} C';
 
       umidade = '${climaProvider.umidade ?? '--'}%';
 
-      descricao = 'Atual - Open-Meteo';
+      descricaoClima = climaProvider.erro != null
+          ? 'Dados anteriores - Open-Meteo'
+          : 'Atual - Open-Meteo';
     }
 
     return SingleChildScrollView(
@@ -59,13 +106,15 @@ class TelaInicio extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           const Text(
-            'Agua, energia e alertas: dados simulados',
+            'Agua e energia: simulados. '
+            'Clima e previsao: Open-Meteo.',
             style: TextStyle(fontSize: 12, color: Colors.blueGrey),
           ),
           const SizedBox(height: 24),
           LayoutBuilder(
             builder: (context, constraints) {
               final colunas = constraints.maxWidth < 600 ? 2 : 3;
+
               final largura =
                   (constraints.maxWidth - (colunas - 1) * 12) / colunas;
 
@@ -98,7 +147,7 @@ class TelaInicio extends StatelessWidget {
                     child: CartaoIndicador(
                       titulo: 'Temperatura',
                       valor: temperatura,
-                      descricao: descricao,
+                      descricao: descricaoClima,
                       icone: Icons.thermostat,
                       cor: Colors.deepOrange,
                     ),
@@ -108,7 +157,7 @@ class TelaInicio extends StatelessWidget {
                     child: CartaoIndicador(
                       titulo: 'Umidade do ar',
                       valor: umidade,
-                      descricao: descricao,
+                      descricao: descricaoClima,
                       icone: Icons.cloud,
                       cor: Colors.teal,
                     ),
@@ -117,8 +166,8 @@ class TelaInicio extends StatelessWidget {
                     width: largura,
                     child: CartaoIndicador(
                       titulo: 'Alertas ativos',
-                      valor: '${alertas.length}',
-                      descricao: 'Alertas simulados',
+                      valor: '$totalAlertas',
+                      descricao: descricaoAlertas,
                       icone: Icons.warning_amber,
                       cor: Colors.red,
                     ),
@@ -129,15 +178,18 @@ class TelaInicio extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           OutlinedButton.icon(
-            onPressed: climaProvider.carregando
+            onPressed:
+                climaProvider.carregando || climaProvider.carregandoPrevisao
                 ? null
                 : () {
-                    context.read<ClimaProvider>().atualizarClima();
+                    final provider = context.read<ClimaProvider>();
+                    provider.atualizarClima();
+                    provider.atualizarPrevisao();
                   },
             icon: const Icon(Icons.refresh),
             label: Text(
-              climaProvider.carregando
-                  ? 'Atualizando clima...'
+              climaProvider.carregando || climaProvider.carregandoPrevisao
+                  ? 'Atualizando dados...'
                   : 'Atualizar clima',
             ),
           ),

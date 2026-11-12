@@ -72,20 +72,24 @@ class TelaIndicadores extends StatelessWidget {
                 ),
               ),
               IconButton(
-                onPressed: climaProvider.carregando
+                onPressed:
+                    climaProvider.carregando ||
+                        climaProvider.carregandoHistorico
                     ? null
                     : () {
-                        context.read<ClimaProvider>().atualizarClima();
+                        final provider = context.read<ClimaProvider>();
+                        provider.atualizarClima();
+                        provider.atualizarHistorico();
                       },
                 icon: const Icon(Icons.refresh),
-                tooltip: 'Atualizar clima',
+                tooltip: 'Atualizar dados climaticos',
                 color: Colors.blue,
               ),
             ],
           ),
           const SizedBox(height: 8),
           const Text(
-            'Valores atuais consultados na API Open-Meteo',
+            'Dados meteorologicos da API Open-Meteo',
             style: TextStyle(fontSize: 12, color: Colors.blueGrey),
           ),
           const SizedBox(height: 16),
@@ -174,15 +178,21 @@ class CartaoDetalhado extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Widget grafico;
+    String fonteGrafico;
 
     if (titulo == 'Consumo de agua') {
       grafico = const GraficoIndicador();
+      fonteGrafico = 'Grafico com dados simulados dos ultimos 7 dias';
     } else if (titulo == 'Consumo de energia') {
       grafico = const GraficoEnergia();
+      fonteGrafico = 'Grafico com dados simulados dos ultimos 7 dias';
     } else if (titulo == 'Temperatura') {
       grafico = const GraficoTemperatura();
+      fonteGrafico =
+          'Media diaria de temperatura dos ultimos 7 dias - Open-Meteo';
     } else {
       grafico = const GraficoUmidade();
+      fonteGrafico = 'Media diaria de umidade dos ultimos 7 dias - Open-Meteo';
     }
 
     return Card(
@@ -224,9 +234,9 @@ class CartaoDetalhado extends StatelessWidget {
             const SizedBox(height: 16),
             grafico,
             const SizedBox(height: 8),
-            const Text(
-              'Grafico com dados simulados dos ultimos 7 dias',
-              style: TextStyle(fontSize: 11, color: Colors.blueGrey),
+            Text(
+              fonteGrafico,
+              style: const TextStyle(fontSize: 11, color: Colors.blueGrey),
             ),
           ],
         ),

@@ -10,7 +10,14 @@ import 'telas/tela_ocorrencias.dart';
 void main() {
   runApp(
     ChangeNotifierProvider(
-      create: (context) => ClimaProvider()..atualizarClima(),
+      lazy: false,
+      create: (context) {
+        final climaProvider = ClimaProvider();
+        climaProvider.atualizarClima();
+        climaProvider.atualizarHistorico();
+        climaProvider.atualizarPrevisao();
+        return climaProvider;
+      },
       child: const CidadeSeguraApp(),
     ),
   );

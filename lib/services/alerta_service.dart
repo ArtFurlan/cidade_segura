@@ -139,4 +139,111 @@ class AlertaService {
 
     return alertas;
   }
+
+  List<Alerta> analisarClima({
+    required double temperatura,
+    required int umidade,
+  }) {
+    final List<Alerta> alertas = [];
+
+    if (umidade < 30) {
+      alertas.add(
+        Alerta(
+          titulo: 'Baixa umidade do ar',
+          nivel: NivelRisco.medio,
+          confianca: ConfiancaAlerta.baixa,
+          justificativa:
+              'A umidade atual informada pela Open-Meteo e de '
+              '$umidade%, abaixo do limite ilustrativo de 30%.',
+          limitacao:
+              'O valor e uma estimativa meteorologica. '
+              'O limite foi definido para demonstracao e '
+              'nao representa uma classificacao oficial de risco.',
+          recomendacao:
+              'Acompanhar as atualizacoes meteorologicas '
+              'e consultar orientacoes de fontes oficiais.',
+          fonte: 'Open-Meteo - umidade atual',
+        ),
+      );
+    }
+
+    if (temperatura >= 35) {
+      alertas.add(
+        Alerta(
+          titulo: 'Temperatura elevada',
+          nivel: NivelRisco.medio,
+          confianca: ConfiancaAlerta.baixa,
+          justificativa:
+              'A temperatura atual informada pela Open-Meteo e de '
+              '${temperatura.toStringAsFixed(1)} C, '
+              'atingindo o limite ilustrativo de 35 C.',
+          limitacao:
+              'O alerta considera apenas a temperatura atual. '
+              'Nao avalia indice de calor, duracao da exposicao '
+              'ou condicoes individuais de vulnerabilidade.',
+          recomendacao:
+              'Monitorar as condicoes meteorologicas '
+              'e consultar orientacoes oficiais sobre calor.',
+          fonte: 'Open-Meteo - temperatura atual',
+        ),
+      );
+    }
+
+    return alertas;
+  }
+
+  List<Alerta> analisarPrevisaoChuva({
+    required double chuvaAcumulada,
+    required double maiorChuvaHoraria,
+  }) {
+    final List<Alerta> alertas = [];
+
+    if (chuvaAcumulada >= 50) {
+      alertas.add(
+        Alerta(
+          titulo: 'Previsao de chuva acumulada elevada',
+          nivel: NivelRisco.alto,
+          confianca: ConfiancaAlerta.baixa,
+          justificativa:
+              'A Open-Meteo preve '
+              '${chuvaAcumulada.toStringAsFixed(1)} mm '
+              'de precipitacao acumulada nas proximas 24 horas. '
+              'A maior precipitacao horaria prevista e de '
+              '${maiorChuvaHoraria.toStringAsFixed(1)} mm.',
+          limitacao:
+              'O limite de 50 mm e ilustrativo. '
+              'A previsao pode mudar e o acumulado de chuva '
+              'nao determina sozinho o risco de alagamento.',
+          recomendacao:
+              'Acompanhar as previsoes oficiais e avaliar '
+              'as condicoes locais antes de qualquer medida.',
+          fonte: 'Open-Meteo - previsao de precipitacao',
+        ),
+      );
+    } else if (chuvaAcumulada >= 20) {
+      alertas.add(
+        Alerta(
+          titulo: 'Previsao de chuva acima do limite',
+          nivel: NivelRisco.medio,
+          confianca: ConfiancaAlerta.baixa,
+          justificativa:
+              'A Open-Meteo preve '
+              '${chuvaAcumulada.toStringAsFixed(1)} mm '
+              'de chuva nas proximas 24 horas. '
+              'O maior valor horario previsto e de '
+              '${maiorChuvaHoraria.toStringAsFixed(1)} mm.',
+          limitacao:
+              'O limite de 20 mm foi definido para demonstracao. '
+              'A intensidade da chuva e as condicoes locais '
+              'podem alterar seus impactos.',
+          recomendacao:
+              'Monitorar a evolucao da previsao '
+              'e verificar comunicados meteorologicos oficiais.',
+          fonte: 'Open-Meteo - previsao de precipitacao',
+        ),
+      );
+    }
+
+    return alertas;
+  }
 }
