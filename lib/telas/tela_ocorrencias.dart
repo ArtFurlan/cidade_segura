@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../services/ocorrencia_service.dart';
+
 class TelaOcorrencias extends StatefulWidget {
   const TelaOcorrencias({super.key});
 
@@ -9,11 +11,15 @@ class TelaOcorrencias extends StatefulWidget {
 
 class _TelaOcorrenciasState extends State<TelaOcorrencias> {
   final formulario = GlobalKey<FormState>();
+  final ocorrenciaService = OcorrenciaService();
 
   final bairroController = TextEditingController();
   final descricaoController = TextEditingController();
 
   String? tipoSelecionado;
+
+  bool carregando = true;
+  bool salvando = false;
 
   final List<String> tipos = [
     'Vazamento de agua',
@@ -23,54 +29,122 @@ class _TelaOcorrenciasState extends State<TelaOcorrencias> {
     'Outro',
   ];
 
-  final List<Map<String, String>> ocorrencias = [];
+  List<Map<String, String>> ocorrencias = [];
 
   @override
-  void dispose() {
-    bairroController.dispose();
-    descricaoController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    carregarOcorrencias();
   }
 
-  void registrarOcorrencia() {
-    if (formulario.currentState!.validate()) {
+  Future<void> carregarOcorrencias() async {
+    try {
+      final lista = await ocorrenciaService.carregarOcorrencias();
+
+      if (!mounted) return;
+
       setState(() {
-        ocorrencias.add({
-          'tipo': tipoSelecionado!,
-          'bairro': bairroController.text.trim(),
-          'descricao': descricaoController.text.trim(),
-          'data': DateTime.now().toString().substring(0, 16),
-        });
+        ocorrencias = lista;
+        carregando = false;
+      });
+    } catch (erro) {
+      if (!mounted) return;
+
+      setState(() {
+        carregando = false;
+      });
+
+      mostrarMensagem('Erro ao carregar ocorrencias', Colors.red);
+    }
+  }
+
+  void mostrarMensagem(String mensagem, Color cor) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(mensagem), backgroundColor: cor));
+  }
+
+  Future<void> registrarOcorrencia() async {
+    if (salvando || carregando) return;
+
+    if (!formulario.currentState!.validate()) return;
+
+    final novaOcorrencia = {
+      'tipo': tipoSelecionado!,
+      'bairro': bairroController.text.trim(),
+      'descricao': descricaoController.text.trim(),
+      'data': DateTime.now().toString().substring(0, 16),
+    };
+
+    final novaLista = [...ocorrencias, novaOcorrencia];
+
+    setState(() {
+      salvando = true;
+    });
+
+    try {
+      await ocorrenciaService.salvarOcorrencias(novaLista);
+
+      if (!mounted) return;
+
+      setState(() {
+        ocorrencias = novaLista;
+        tipoSelecionado = null;
+        salvando = false;
       });
 
       formulario.currentState!.reset();
       bairroController.clear();
       descricaoController.clear();
 
+      mostrarMensagem('Ocorrencia registrada com sucesso!', Colors.green);
+    } catch (erro) {
+      if (!mounted) return;
+
       setState(() {
-        tipoSelecionado = null;
+        salvando = false;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Ocorrencia registrada com sucesso!'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      mostrarMensagem('Erro ao salvar ocorrencia', Colors.red);
     }
   }
 
-  void excluirOcorrencia(int index) {
+  Future<void> excluirOcorrencia(int index) async {
+    if (salvando || carregando) return;
+
+    final novaLista = List<Map<String, String>>.from(ocorrencias);
+    novaLista.removeAt(index);
+
     setState(() {
-      ocorrencias.removeAt(index);
+      salvando = true;
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Ocorrencia excluida!'),
-        backgroundColor: Colors.orange,
-      ),
-    );
+    try {
+      await ocorrenciaService.salvarOcorrencias(novaLista);
+
+      if (!mounted) return;
+
+      setState(() {
+        ocorrencias = novaLista;
+        salvando = false;
+      });
+
+      mostrarMensagem('Ocorrencia excluida!', Colors.orange);
+    } catch (erro) {
+      if (!mounted) return;
+
+      setState(() {
+        salvando = false;
+      });
+
+      mostrarMensagem('Erro ao excluir ocorrencia', Colors.red);
+    }
+  }
+
+  @override
+  void dispose() {
+    bairroController.dispose();
+    descricaoController.dispose();
+    super.dispose();
   }
 
   @override
@@ -118,11 +192,13 @@ class _TelaOcorrenciasState extends State<TelaOcorrencias> {
                       items: tipos.map((tipo) {
                         return DropdownMenuItem(value: tipo, child: Text(tipo));
                       }).toList(),
-                      onChanged: (valor) {
-                        setState(() {
-                          tipoSelecionado = valor;
-                        });
-                      },
+                      onChanged: salvando || carregando
+                          ? null
+                          : (valor) {
+                              setState(() {
+                                tipoSelecionado = valor;
+                              });
+                            },
                       validator: (valor) {
                         if (valor == null) {
                           return 'Selecione um tipo de ocorrencia';
@@ -138,6 +214,7 @@ class _TelaOcorrenciasState extends State<TelaOcorrencias> {
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: bairroController,
+                      enabled: !salvando && !carregando,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         hintText: 'Digite o bairro',
@@ -157,6 +234,7 @@ class _TelaOcorrenciasState extends State<TelaOcorrencias> {
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: descricaoController,
+                      enabled: !salvando && !carregando,
                       maxLines: 4,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
@@ -178,9 +256,13 @@ class _TelaOcorrenciasState extends State<TelaOcorrencias> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
-                        onPressed: registrarOcorrencia,
+                        onPressed: salvando || carregando
+                            ? null
+                            : registrarOcorrencia,
                         icon: const Icon(Icons.add_circle_outline),
-                        label: const Text('Registrar ocorrencia'),
+                        label: Text(
+                          salvando ? 'Salvando...' : 'Registrar ocorrencia',
+                        ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue,
                           foregroundColor: Colors.white,
@@ -203,7 +285,9 @@ class _TelaOcorrenciasState extends State<TelaOcorrencias> {
             ),
           ),
           const SizedBox(height: 16),
-          if (ocorrencias.isEmpty)
+          if (carregando)
+            const Center(child: CircularProgressIndicator())
+          else if (ocorrencias.isEmpty)
             const Card(
               child: Padding(
                 padding: EdgeInsets.all(20),
@@ -248,9 +332,9 @@ class _TelaOcorrenciasState extends State<TelaOcorrencias> {
                               ),
                             ),
                             IconButton(
-                              onPressed: () {
-                                excluirOcorrencia(index);
-                              },
+                              onPressed: salvando
+                                  ? null
+                                  : () => excluirOcorrencia(index),
                               icon: const Icon(
                                 Icons.delete_outline,
                                 color: Colors.red,
