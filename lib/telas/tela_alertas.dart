@@ -29,7 +29,9 @@ class TelaAlertas extends StatelessWidget {
 
     final climaDisponivel = temperatura != null && umidade != null;
 
-    final List<Alerta> alertasClimaticos = climaDisponivel
+    final climaValido = climaDisponivel && !climaProvider.climaDesatualizado;
+
+    final List<Alerta> alertasClimaticos = climaValido
         ? alertaService.analisarClima(
             temperatura: temperatura,
             umidade: umidade,
@@ -43,9 +45,12 @@ class TelaAlertas extends StatelessWidget {
     final previsaoDisponivel =
         chuvaAcumulada != null &&
         maiorChuvaHoraria != null &&
-        horasAnalisadas != null;
+        horasAnalisadas == 24;
 
-    final List<Alerta> alertasChuva = previsaoDisponivel
+    final previsaoValida =
+        previsaoDisponivel && !climaProvider.previsaoDesatualizada;
+
+    final List<Alerta> alertasChuva = previsaoValida
         ? alertaService.analisarPrevisaoChuva(
             chuvaAcumulada: chuvaAcumulada,
             maiorChuvaHoraria: maiorChuvaHoraria,
@@ -123,6 +128,11 @@ class TelaAlertas extends StatelessWidget {
             'Analise da temperatura e umidade atuais da Open-Meteo.',
             style: TextStyle(fontSize: 13, color: Colors.grey),
           ),
+          const SizedBox(height: 8),
+          Text(
+            'Ultima consulta: ${climaProvider.horarioAtualizacaoClima}',
+            style: const TextStyle(fontSize: 12, color: Colors.blueGrey),
+          ),
           const SizedBox(height: 16),
           if (climaProvider.carregando && !climaDisponivel)
             const Center(
@@ -131,25 +141,41 @@ class TelaAlertas extends StatelessWidget {
                 child: CircularProgressIndicator(),
               ),
             )
-          else if (!climaDisponivel)
+          else if (!climaValido)
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Row(
                       children: [
-                        Icon(Icons.error_outline, color: Colors.orange),
+                        Icon(Icons.warning_amber, color: Colors.orange),
                         SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            'Dados climaticos indisponiveis. '
-                            'Nao foi possivel avaliar os riscos meteorologicos.',
+                            'Dados climaticos indisponiveis ou '
+                            'desatualizados. A analise de alertas '
+                            'meteorologicos foi suspensa.',
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 12),
+                    if (climaDisponivel) ...[
+                      Text(
+                        'Ultima temperatura recebida: '
+                        '${temperatura.toStringAsFixed(1)} C',
+                      ),
+                      const SizedBox(height: 8),
+                      Text('Ultima umidade recebida: $umidade%'),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Esses valores sao apenas referencia historica.',
+                        style: TextStyle(fontSize: 12, color: Colors.blueGrey),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
                     ElevatedButton.icon(
                       onPressed: climaProvider.carregando
                           ? null
@@ -157,7 +183,11 @@ class TelaAlertas extends StatelessWidget {
                               context.read<ClimaProvider>().atualizarClima();
                             },
                       icon: const Icon(Icons.refresh),
-                      label: const Text('Tentar novamente'),
+                      label: Text(
+                        climaProvider.carregando
+                            ? 'Atualizando...'
+                            : 'Atualizar clima',
+                      ),
                     ),
                   ],
                 ),
@@ -198,14 +228,6 @@ class TelaAlertas extends StatelessWidget {
             )
           else
             ListaAlertas(alertas: alertasClimaticos),
-          if (climaDisponivel && climaProvider.erro != null) ...[
-            const SizedBox(height: 12),
-            const Text(
-              'A ultima atualizacao do clima falhou. '
-              'Os dados exibidos podem estar desatualizados.',
-              style: TextStyle(fontSize: 12, color: Colors.orange),
-            ),
-          ],
           const SizedBox(height: 32),
           const Text(
             'Previsao de chuva - proximas 24 horas',
@@ -220,6 +242,11 @@ class TelaAlertas extends StatelessWidget {
             'Precipitacao prevista pela Open-Meteo para Sao Paulo.',
             style: TextStyle(fontSize: 13, color: Colors.grey),
           ),
+          const SizedBox(height: 8),
+          Text(
+            'Ultima consulta: ${climaProvider.horarioAtualizacaoPrevisao}',
+            style: const TextStyle(fontSize: 12, color: Colors.blueGrey),
+          ),
           const SizedBox(height: 16),
           if (climaProvider.carregandoPrevisao && !previsaoDisponivel)
             const Center(
@@ -228,23 +255,31 @@ class TelaAlertas extends StatelessWidget {
                 child: CircularProgressIndicator(),
               ),
             )
-          else if (!previsaoDisponivel)
+          else if (!previsaoValida)
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Row(
                       children: [
-                        Icon(Icons.error_outline, color: Colors.orange),
+                        Icon(Icons.warning_amber, color: Colors.orange),
                         SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            'Previsao de chuva indisponivel. '
-                            'Nao foi possivel avaliar a precipitacao prevista.',
+                            'Previsao de chuva indisponivel ou '
+                            'desatualizada. Os alertas de chuva '
+                            'foram suspensos ate uma nova consulta.',
                           ),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Uma previsao antiga nao deve ser tratada '
+                      'como uma previsao atual.',
+                      style: TextStyle(fontSize: 12, color: Colors.blueGrey),
                     ),
                     const SizedBox(height: 12),
                     ElevatedButton.icon(
@@ -254,7 +289,11 @@ class TelaAlertas extends StatelessWidget {
                               context.read<ClimaProvider>().atualizarPrevisao();
                             },
                       icon: const Icon(Icons.refresh),
-                      label: const Text('Tentar novamente'),
+                      label: Text(
+                        climaProvider.carregandoPrevisao
+                            ? 'Atualizando...'
+                            : 'Atualizar previsao',
+                      ),
                     ),
                   ],
                 ),
@@ -317,14 +356,6 @@ class TelaAlertas extends StatelessWidget {
               )
             else
               ListaAlertas(alertas: alertasChuva),
-          ],
-          if (previsaoDisponivel && climaProvider.erroPrevisao != null) ...[
-            const SizedBox(height: 12),
-            const Text(
-              'A ultima consulta da previsao falhou. '
-              'Os valores exibidos podem estar desatualizados.',
-              style: TextStyle(fontSize: 12, color: Colors.orange),
-            ),
           ],
           const SizedBox(height: 32),
           const Text(

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -47,8 +49,11 @@ class TelaPrincipal extends StatefulWidget {
   State<TelaPrincipal> createState() => _TelaPrincipalState();
 }
 
-class _TelaPrincipalState extends State<TelaPrincipal> {
+class _TelaPrincipalState extends State<TelaPrincipal>
+    with WidgetsBindingObserver {
   int paginaAtual = 0;
+
+  Timer? temporizador;
 
   final List<Widget> telas = const [
     TelaInicio(),
@@ -63,6 +68,55 @@ class _TelaPrincipalState extends State<TelaPrincipal> {
     'Alertas',
     'Ocorrencias',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addObserver(this);
+
+    temporizador = Timer.periodic(const Duration(minutes: 5), (timer) {
+      verificarAtualizacoes();
+    });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    if (state == AppLifecycleState.resumed) {
+      verificarAtualizacoes();
+    }
+  }
+
+  void verificarAtualizacoes() {
+    if (!mounted) return;
+
+    final climaProvider = context.read<ClimaProvider>();
+
+    if (climaProvider.climaDesatualizado && !climaProvider.carregando) {
+      climaProvider.atualizarClima();
+    }
+
+    if (climaProvider.historicoDesatualizado &&
+        !climaProvider.carregandoHistorico) {
+      climaProvider.atualizarHistorico();
+    }
+
+    if (climaProvider.previsaoDesatualizada &&
+        !climaProvider.carregandoPrevisao) {
+      climaProvider.atualizarPrevisao();
+    }
+
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    temporizador?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

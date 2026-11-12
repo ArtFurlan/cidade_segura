@@ -6,6 +6,8 @@ import '../componentes/grafico_indicador.dart';
 import '../componentes/grafico_energia.dart';
 import '../componentes/grafico_temperatura.dart';
 import '../componentes/grafico_umidade.dart';
+import '../componentes/indicador_saneamento_oficial.dart';
+import '../componentes/indicador_energia_oficial.dart';
 import '../providers/clima_provider.dart';
 
 class TelaIndicadores extends StatelessWidget {
@@ -38,7 +40,8 @@ class TelaIndicadores extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           const Text(
-            'Agua e energia: dados simulados',
+            'Agua e energia: consumo simulado. '
+            'Indicadores oficiais identificados separadamente.',
             style: TextStyle(fontSize: 12, color: Colors.blueGrey),
           ),
           const SizedBox(height: 24),
@@ -49,7 +52,29 @@ class TelaIndicadores extends StatelessWidget {
             icone: Icons.water_drop,
             cor: Colors.blue,
           ),
+          const SizedBox(height: 24),
+          const Text(
+            'Dados oficiais de saneamento',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF142B49),
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Indicadores historicos do municipio de Sao Paulo.',
+            style: TextStyle(fontSize: 13, color: Colors.grey),
+          ),
           const SizedBox(height: 16),
+          const IndicadorSaneamentoOficial(),
+          const SizedBox(height: 8),
+          const Text(
+            'O indicador oficial de perdas nao deve ser '
+            'comparado diretamente com o consumo simulado.',
+            style: TextStyle(fontSize: 12, color: Colors.blueGrey),
+          ),
+          const SizedBox(height: 32),
           CartaoDetalhado(
             titulo: 'Consumo de energia',
             valor: '${consumoEnergia.toStringAsFixed(0)} kWh',
@@ -58,6 +83,28 @@ class TelaIndicadores extends StatelessWidget {
             cor: Colors.orange,
           ),
           const SizedBox(height: 24),
+          const Text(
+            'Dados oficiais de energia',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF142B49),
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Consumo anual de energia eletrica do municipio de Sao Paulo.',
+            style: TextStyle(fontSize: 13, color: Colors.grey),
+          ),
+          const SizedBox(height: 16),
+          const IndicadorEnergiaOficial(),
+          const SizedBox(height: 8),
+          const Text(
+            'O consumo anual municipal nao deve ser comparado '
+            'diretamente com o consumo diario simulado.',
+            style: TextStyle(fontSize: 12, color: Colors.blueGrey),
+          ),
+          const SizedBox(height: 32),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -78,6 +125,7 @@ class TelaIndicadores extends StatelessWidget {
                     ? null
                     : () {
                         final provider = context.read<ClimaProvider>();
+
                         provider.atualizarClima();
                         provider.atualizarHistorico();
                       },
@@ -131,9 +179,17 @@ class TelaIndicadores extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Atualizacao da API: ${climaProvider.horario ?? '--'}',
+                  'Atualizacao da API: '
+                  '${climaProvider.horario ?? '--'}',
                   style: const TextStyle(fontSize: 12, color: Colors.grey),
                 ),
+                if (climaProvider.climaDesatualizado) ...[
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Dados atuais podem estar desatualizados.',
+                    style: TextStyle(fontSize: 12, color: Colors.orange),
+                  ),
+                ],
                 const SizedBox(height: 12),
                 CartaoDetalhado(
                   titulo: 'Temperatura',

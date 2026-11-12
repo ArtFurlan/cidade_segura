@@ -26,7 +26,9 @@ class TelaInicio extends StatelessWidget {
 
     final climaDisponivel = temperaturaAtual != null && umidadeAtual != null;
 
-    final alertasClimaticos = climaDisponivel
+    final climaValido = climaDisponivel && !climaProvider.climaDesatualizado;
+
+    final alertasClimaticos = climaValido
         ? alertaService.analisarClima(
             temperatura: temperaturaAtual,
             umidade: umidadeAtual,
@@ -42,7 +44,10 @@ class TelaInicio extends StatelessWidget {
         maiorChuvaHoraria != null &&
         horasAnalisadas == 24;
 
-    final alertasChuva = previsaoDisponivel
+    final previsaoValida =
+        previsaoDisponivel && !climaProvider.previsaoDesatualizada;
+
+    final alertasChuva = previsaoValida
         ? alertaService.analisarPrevisaoChuva(
             chuvaAcumulada: chuvaAcumulada,
             maiorChuvaHoraria: maiorChuvaHoraria,
@@ -60,30 +65,27 @@ class TelaInicio extends StatelessWidget {
         '${alertasSimulados.length} simulados, '
         '$totalMeteorologicos meteorologicos';
 
-    if (!climaDisponivel || !previsaoDisponivel) {
-      descricaoAlertas = 'Contagem parcial - dados indisponiveis';
-    } else if (climaProvider.erro != null ||
-        climaProvider.erroPrevisao != null) {
-      descricaoAlertas = 'Contagem com dados possivelmente antigos';
+    if (!climaValido || !previsaoValida) {
+      descricaoAlertas = 'Contagem parcial - clima indisponivel';
     }
 
     String temperatura = '...';
     String umidade = '...';
     String descricaoClima = 'Carregando clima';
 
-    if (climaProvider.erro != null && climaProvider.dadosClima == null) {
-      temperatura = '--';
-      umidade = '--';
-      descricaoClima = 'Erro ao consultar API';
-    } else if (climaProvider.dadosClima != null) {
+    if (climaProvider.dadosClima != null) {
       temperatura =
           '${climaProvider.temperatura?.toStringAsFixed(1) ?? '--'} C';
 
       umidade = '${climaProvider.umidade ?? '--'}%';
 
-      descricaoClima = climaProvider.erro != null
-          ? 'Dados anteriores - Open-Meteo'
+      descricaoClima = climaProvider.climaDesatualizado
+          ? 'Dados desatualizados - Open-Meteo'
           : 'Atual - Open-Meteo';
+    } else if (climaProvider.erro != null) {
+      temperatura = '--';
+      umidade = '--';
+      descricaoClima = 'Erro ao consultar API';
     }
 
     return SingleChildScrollView(
