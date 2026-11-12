@@ -1,43 +1,43 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../dados/dados_simulados.dart';
-import '../services/clima_service.dart';
+import '../providers/clima_provider.dart';
 import '../services/alerta_service.dart';
 
-class TelaInicio extends StatefulWidget {
+class TelaInicio extends StatelessWidget {
   const TelaInicio({super.key});
 
   @override
-  State<TelaInicio> createState() => _TelaInicioState();
-}
-
-class _TelaInicioState extends State<TelaInicio> {
-  final ClimaService climaService = ClimaService();
-  final AlertaService alertaService = AlertaService();
-
-  late Future<Map<String, dynamic>> dadosClima;
-
-  @override
-  void initState() {
-    super.initState();
-    dadosClima = climaService.buscarClima();
-  }
-
-  void atualizarClima() {
-    setState(() {
-      dadosClima = climaService.buscarClima();
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final climaProvider = context.watch<ClimaProvider>();
+
     final consumoAgua = DadosSimulados.consumoAguaAtual;
     final consumoEnergia = DadosSimulados.consumoEnergiaAtual;
+
+    final alertaService = AlertaService();
 
     final alertas = alertaService.analisarIndicadores(
       consumoAgua: consumoAgua,
       consumoEnergia: consumoEnergia,
     );
+
+    String temperatura = '...';
+    String umidade = '...';
+    String descricao = 'Carregando clima';
+
+    if (climaProvider.erro != null && climaProvider.dadosClima == null) {
+      temperatura = '--';
+      umidade = '--';
+      descricao = 'Erro ao consultar API';
+    } else if (climaProvider.dadosClima != null) {
+      temperatura =
+          '${climaProvider.temperatura?.toStringAsFixed(1) ?? '--'} C';
+
+      umidade = '${climaProvider.umidade ?? '--'}%';
+
+      descricao = 'Atual - Open-Meteo';
+    }
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -93,55 +93,25 @@ class _TelaInicioState extends State<TelaInicio> {
                       cor: Colors.orange,
                     ),
                   ),
-                  FutureBuilder<Map<String, dynamic>>(
-                    future: dadosClima,
-                    builder: (context, snapshot) {
-                      String temperatura = '...';
-                      String umidade = '...';
-                      String descricao = 'Carregando clima';
-
-                      if (snapshot.hasError) {
-                        temperatura = '--';
-                        umidade = '--';
-                        descricao = 'Erro ao consultar API';
-                      } else if (snapshot.hasData) {
-                        final dados = snapshot.data!;
-
-                        temperatura =
-                            '${(dados['temperatura'] as num).toStringAsFixed(1)} C';
-
-                        umidade = '${(dados['umidade'] as num).round()}%';
-
-                        descricao = 'Atual - Open-Meteo';
-                      }
-
-                      return Wrap(
-                        spacing: 12,
-                        runSpacing: 12,
-                        children: [
-                          SizedBox(
-                            width: largura,
-                            child: CartaoIndicador(
-                              titulo: 'Temperatura',
-                              valor: temperatura,
-                              descricao: descricao,
-                              icone: Icons.thermostat,
-                              cor: Colors.deepOrange,
-                            ),
-                          ),
-                          SizedBox(
-                            width: largura,
-                            child: CartaoIndicador(
-                              titulo: 'Umidade do ar',
-                              valor: umidade,
-                              descricao: descricao,
-                              icone: Icons.cloud,
-                              cor: Colors.teal,
-                            ),
-                          ),
-                        ],
-                      );
-                    },
+                  SizedBox(
+                    width: largura,
+                    child: CartaoIndicador(
+                      titulo: 'Temperatura',
+                      valor: temperatura,
+                      descricao: descricao,
+                      icone: Icons.thermostat,
+                      cor: Colors.deepOrange,
+                    ),
+                  ),
+                  SizedBox(
+                    width: largura,
+                    child: CartaoIndicador(
+                      titulo: 'Umidade do ar',
+                      valor: umidade,
+                      descricao: descricao,
+                      icone: Icons.cloud,
+                      cor: Colors.teal,
+                    ),
                   ),
                   SizedBox(
                     width: largura,
@@ -159,9 +129,17 @@ class _TelaInicioState extends State<TelaInicio> {
           ),
           const SizedBox(height: 20),
           OutlinedButton.icon(
-            onPressed: atualizarClima,
+            onPressed: climaProvider.carregando
+                ? null
+                : () {
+                    context.read<ClimaProvider>().atualizarClima();
+                  },
             icon: const Icon(Icons.refresh),
-            label: const Text('Atualizar clima'),
+            label: Text(
+              climaProvider.carregando
+                  ? 'Atualizando clima...'
+                  : 'Atualizar clima',
+            ),
           ),
         ],
       ),

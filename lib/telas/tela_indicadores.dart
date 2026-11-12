@@ -1,38 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../dados/dados_simulados.dart';
 import '../componentes/grafico_indicador.dart';
 import '../componentes/grafico_energia.dart';
 import '../componentes/grafico_temperatura.dart';
 import '../componentes/grafico_umidade.dart';
-import '../services/clima_service.dart';
+import '../providers/clima_provider.dart';
 
-class TelaIndicadores extends StatefulWidget {
+class TelaIndicadores extends StatelessWidget {
   const TelaIndicadores({super.key});
 
   @override
-  State<TelaIndicadores> createState() => _TelaIndicadoresState();
-}
-
-class _TelaIndicadoresState extends State<TelaIndicadores> {
-  final ClimaService climaService = ClimaService();
-
-  late Future<Map<String, dynamic>> dadosClima;
-
-  @override
-  void initState() {
-    super.initState();
-    dadosClima = climaService.buscarClima();
-  }
-
-  void atualizarClima() {
-    setState(() {
-      dadosClima = climaService.buscarClima();
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final climaProvider = context.watch<ClimaProvider>();
+
     final consumoAgua = DadosSimulados.consumoAguaAtual;
     final consumoEnergia = DadosSimulados.consumoEnergiaAtual;
 
@@ -90,7 +72,11 @@ class _TelaIndicadoresState extends State<TelaIndicadores> {
                 ),
               ),
               IconButton(
-                onPressed: atualizarClima,
+                onPressed: climaProvider.carregando
+                    ? null
+                    : () {
+                        context.read<ClimaProvider>().atualizarClima();
+                      },
                 icon: const Icon(Icons.refresh),
                 tooltip: 'Atualizar clima',
                 color: Colors.blue,
@@ -103,79 +89,66 @@ class _TelaIndicadoresState extends State<TelaIndicadores> {
             style: TextStyle(fontSize: 12, color: Colors.blueGrey),
           ),
           const SizedBox(height: 16),
-          FutureBuilder<Map<String, dynamic>>(
-            future: dadosClima,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(30),
-                    child: CircularProgressIndicator(),
-                  ),
-                );
-              }
-
-              if (snapshot.hasError || !snapshot.hasData) {
-                return Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      children: [
-                        const Icon(
-                          Icons.error_outline,
-                          color: Colors.red,
-                          size: 32,
-                        ),
-                        const SizedBox(height: 12),
-                        const Text('Nao foi possivel carregar o clima.'),
-                        const SizedBox(height: 12),
-                        ElevatedButton(
-                          onPressed: atualizarClima,
-                          child: const Text('Tentar novamente'),
-                        ),
-                      ],
+          if (climaProvider.carregando && climaProvider.dadosClima == null)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(30),
+                child: CircularProgressIndicator(),
+              ),
+            )
+          else if (climaProvider.dadosClima == null)
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    const Icon(
+                      Icons.error_outline,
+                      color: Colors.red,
+                      size: 32,
                     ),
-                  ),
-                );
-              }
-
-              final dados = snapshot.data!;
-
-              final temperatura = (dados['temperatura'] as num).toStringAsFixed(
-                1,
-              );
-
-              final umidade = (dados['umidade'] as num).round();
-
-              final horario = dados['horario'].toString();
-
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Atualizacao da API: $horario',
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                  const SizedBox(height: 12),
-                  CartaoDetalhado(
-                    titulo: 'Temperatura',
-                    valor: '$temperatura C',
-                    descricao: 'Temperatura atual - Open-Meteo',
-                    icone: Icons.thermostat,
-                    cor: Colors.deepOrange,
-                  ),
-                  const SizedBox(height: 16),
-                  CartaoDetalhado(
-                    titulo: 'Umidade do ar',
-                    valor: '$umidade%',
-                    descricao: 'Umidade atual - Open-Meteo',
-                    icone: Icons.cloud,
-                    cor: Colors.teal,
-                  ),
-                ],
-              );
-            },
-          ),
+                    const SizedBox(height: 12),
+                    const Text('Nao foi possivel carregar o clima.'),
+                    const SizedBox(height: 12),
+                    ElevatedButton(
+                      onPressed: climaProvider.carregando
+                          ? null
+                          : () {
+                              context.read<ClimaProvider>().atualizarClima();
+                            },
+                      child: const Text('Tentar novamente'),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Atualizacao da API: ${climaProvider.horario ?? '--'}',
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+                const SizedBox(height: 12),
+                CartaoDetalhado(
+                  titulo: 'Temperatura',
+                  valor:
+                      '${climaProvider.temperatura?.toStringAsFixed(1) ?? '--'} C',
+                  descricao: 'Temperatura atual - Open-Meteo',
+                  icone: Icons.thermostat,
+                  cor: Colors.deepOrange,
+                ),
+                const SizedBox(height: 16),
+                CartaoDetalhado(
+                  titulo: 'Umidade do ar',
+                  valor: '${climaProvider.umidade ?? '--'}%',
+                  descricao: 'Umidade atual - Open-Meteo',
+                  icone: Icons.cloud,
+                  cor: Colors.teal,
+                ),
+              ],
+            ),
         ],
       ),
     );

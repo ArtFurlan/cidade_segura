@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import 'providers/clima_provider.dart';
 import 'telas/tela_inicio.dart';
 import 'telas/tela_indicadores.dart';
 import 'telas/tela_alertas.dart';
 import 'telas/tela_ocorrencias.dart';
 
 void main() {
-  runApp(const CidadeSeguraApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => ClimaProvider()..atualizarClima(),
+      child: const CidadeSeguraApp(),
+    ),
+  );
 }
 
 class CidadeSeguraApp extends StatelessWidget {
