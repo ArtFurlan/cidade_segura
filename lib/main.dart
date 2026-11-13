@@ -30,12 +30,48 @@ class CidadeSeguraApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const corFundo = Color(0xFF17191E);
+    const corCartao = Color(0xFF292D35);
+    const corAzul = Color(0xFF42A5F5);
+    const corTexto = Color(0xFFF5F6F8);
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Cidade Segura',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        scaffoldBackgroundColor: Colors.white,
+        useMaterial3: true,
+        brightness: Brightness.dark,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: corAzul,
+          brightness: Brightness.dark,
+          surface: corFundo,
+          primary: corAzul,
+          onPrimary: corFundo,
+          onSurface: corTexto,
+        ),
+        scaffoldBackgroundColor: corFundo,
+        cardColor: corCartao,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF21252D),
+          foregroundColor: corTexto,
+          elevation: 0,
+          centerTitle: false,
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: corCartao,
+          labelStyle: const TextStyle(color: Color(0xFFD0D5DE)),
+          hintStyle: const TextStyle(color: Color(0xFFB8C0CA)),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: Color(0xFF59616D)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: corAzul, width: 2),
+          ),
+        ),
+        dividerColor: const Color(0xFF414752),
       ),
       home: const TelaPrincipal(),
     );
@@ -121,17 +157,20 @@ class _TelaPrincipalState extends State<TelaPrincipal>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(titulos[paginaAtual]),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-      ),
+      appBar: AppBar(title: Text(titulos[paginaAtual])),
       body: telas[paginaAtual],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: paginaAtual,
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
+        backgroundColor: const Color(0xFF21252D),
+        selectedItemColor: const Color(0xFF42A5F5),
+        unselectedItemColor: const Color(0xFFB8C0CA),
+        selectedFontSize: 12,
+        unselectedFontSize: 12,
+        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
+        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
         onTap: (index) {
           setState(() {
             paginaAtual = index;

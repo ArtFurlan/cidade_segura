@@ -30,19 +30,19 @@ class TelaIndicadores extends StatelessWidget {
             style: TextStyle(
               fontSize: 26,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF142B49),
+              color: Color(0xFFF5F6F8),
             ),
           ),
           const SizedBox(height: 8),
           const Text(
             'Acompanhe os recursos e as condicoes ambientais.',
-            style: TextStyle(fontSize: 14, color: Colors.grey),
+            style: TextStyle(fontSize: 14, color: Color(0xFFD0D5DE)),
           ),
           const SizedBox(height: 8),
           const Text(
             'Agua e energia: consumo simulado. '
             'Indicadores oficiais identificados separadamente.',
-            style: TextStyle(fontSize: 12, color: Colors.blueGrey),
+            style: TextStyle(fontSize: 12, color: Color(0xFFB8C0CA)),
           ),
           const SizedBox(height: 24),
           CartaoDetalhado(
@@ -50,7 +50,7 @@ class TelaIndicadores extends StatelessWidget {
             valor: '${consumoAgua.toStringAsFixed(0)} m3',
             descricao: 'Consumo simulado nas ultimas 24 horas',
             icone: Icons.water_drop,
-            cor: Colors.blue,
+            cor: const Color(0xFF42A5F5),
           ),
           const SizedBox(height: 24),
           const Text(
@@ -58,13 +58,13 @@ class TelaIndicadores extends StatelessWidget {
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF142B49),
+              color: Color(0xFFF5F6F8),
             ),
           ),
           const SizedBox(height: 8),
           const Text(
             'Indicadores historicos do municipio de Sao Paulo.',
-            style: TextStyle(fontSize: 13, color: Colors.grey),
+            style: TextStyle(fontSize: 13, color: Color(0xFFD0D5DE)),
           ),
           const SizedBox(height: 16),
           const IndicadorSaneamentoOficial(),
@@ -72,7 +72,7 @@ class TelaIndicadores extends StatelessWidget {
           const Text(
             'O indicador oficial de perdas nao deve ser '
             'comparado diretamente com o consumo simulado.',
-            style: TextStyle(fontSize: 12, color: Colors.blueGrey),
+            style: TextStyle(fontSize: 12, color: Color(0xFFB8C0CA)),
           ),
           const SizedBox(height: 32),
           CartaoDetalhado(
@@ -80,7 +80,7 @@ class TelaIndicadores extends StatelessWidget {
             valor: '${consumoEnergia.toStringAsFixed(0)} kWh',
             descricao: 'Consumo simulado nas ultimas 24 horas',
             icone: Icons.bolt,
-            cor: Colors.orange,
+            cor: const Color(0xFFFFB74D),
           ),
           const SizedBox(height: 24),
           const Text(
@@ -88,13 +88,13 @@ class TelaIndicadores extends StatelessWidget {
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF142B49),
+              color: Color(0xFFF5F6F8),
             ),
           ),
           const SizedBox(height: 8),
           const Text(
             'Consumo anual de energia eletrica do municipio de Sao Paulo.',
-            style: TextStyle(fontSize: 13, color: Colors.grey),
+            style: TextStyle(fontSize: 13, color: Color(0xFFD0D5DE)),
           ),
           const SizedBox(height: 16),
           const IndicadorEnergiaOficial(),
@@ -102,7 +102,7 @@ class TelaIndicadores extends StatelessWidget {
           const Text(
             'O consumo anual municipal nao deve ser comparado '
             'diretamente com o consumo diario simulado.',
-            style: TextStyle(fontSize: 12, color: Colors.blueGrey),
+            style: TextStyle(fontSize: 12, color: Color(0xFFB8C0CA)),
           ),
           const SizedBox(height: 32),
           Row(
@@ -114,7 +114,7 @@ class TelaIndicadores extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF142B49),
+                    color: Color(0xFFF5F6F8),
                   ),
                 ),
               ),
@@ -131,14 +131,14 @@ class TelaIndicadores extends StatelessWidget {
                       },
                 icon: const Icon(Icons.refresh),
                 tooltip: 'Atualizar dados climaticos',
-                color: Colors.blue,
+                color: const Color(0xFF42A5F5),
               ),
             ],
           ),
           const SizedBox(height: 8),
           const Text(
             'Dados meteorologicos da API Open-Meteo',
-            style: TextStyle(fontSize: 12, color: Colors.blueGrey),
+            style: TextStyle(fontSize: 12, color: Color(0xFFB8C0CA)),
           ),
           const SizedBox(height: 16),
           if (climaProvider.carregando && climaProvider.dadosClima == null)
@@ -150,17 +150,21 @@ class TelaIndicadores extends StatelessWidget {
             )
           else if (climaProvider.dadosClima == null)
             Card(
+              color: const Color(0xFF292D35),
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   children: [
                     const Icon(
                       Icons.error_outline,
-                      color: Colors.red,
+                      color: Color(0xFFFF5252),
                       size: 32,
                     ),
                     const SizedBox(height: 12),
-                    const Text('Nao foi possivel carregar o clima.'),
+                    const Text(
+                      'Nao foi possivel carregar o clima.',
+                      style: TextStyle(color: Color(0xFFF5F6F8)),
+                    ),
                     const SizedBox(height: 12),
                     ElevatedButton(
                       onPressed: climaProvider.carregando
@@ -181,13 +185,16 @@ class TelaIndicadores extends StatelessWidget {
                 Text(
                   'Atualizacao da API: '
                   '${climaProvider.horario ?? '--'}',
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFFB8C0CA),
+                  ),
                 ),
                 if (climaProvider.climaDesatualizado) ...[
                   const SizedBox(height: 8),
                   const Text(
                     'Dados atuais podem estar desatualizados.',
-                    style: TextStyle(fontSize: 12, color: Colors.orange),
+                    style: TextStyle(fontSize: 12, color: Color(0xFFFFB74D)),
                   ),
                 ],
                 const SizedBox(height: 12),
@@ -197,7 +204,7 @@ class TelaIndicadores extends StatelessWidget {
                       '${climaProvider.temperatura?.toStringAsFixed(1) ?? '--'} C',
                   descricao: 'Temperatura atual - Open-Meteo',
                   icone: Icons.thermostat,
-                  cor: Colors.deepOrange,
+                  cor: const Color(0xFFFF7043),
                 ),
                 const SizedBox(height: 16),
                 CartaoDetalhado(
@@ -205,7 +212,7 @@ class TelaIndicadores extends StatelessWidget {
                   valor: '${climaProvider.umidade ?? '--'}%',
                   descricao: 'Umidade atual - Open-Meteo',
                   icone: Icons.cloud,
-                  cor: Colors.teal,
+                  cor: const Color(0xFF26A69A),
                 ),
               ],
             ),
@@ -252,7 +259,9 @@ class CartaoDetalhado extends StatelessWidget {
     }
 
     return Card(
+      color: const Color(0xFF292D35),
       elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -268,6 +277,7 @@ class CartaoDetalhado extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
+                      color: Color(0xFFF5F6F8),
                     ),
                   ),
                 ),
@@ -279,20 +289,20 @@ class CartaoDetalhado extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 30,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF142B49),
+                color: Color(0xFFF5F6F8),
               ),
             ),
             const SizedBox(height: 8),
             Text(
               descricao,
-              style: const TextStyle(fontSize: 14, color: Colors.grey),
+              style: const TextStyle(fontSize: 14, color: Color(0xFFD0D5DE)),
             ),
             const SizedBox(height: 16),
             grafico,
             const SizedBox(height: 8),
             Text(
               fonteGrafico,
-              style: const TextStyle(fontSize: 11, color: Colors.blueGrey),
+              style: const TextStyle(fontSize: 11, color: Color(0xFFB8C0CA)),
             ),
           ],
         ),

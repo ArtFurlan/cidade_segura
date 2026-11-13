@@ -149,6 +149,12 @@ class _TelaOcorrenciasState extends State<TelaOcorrencias> {
 
   @override
   Widget build(BuildContext context) {
+    const corCartao = Color(0xFF292D35);
+    const corTitulo = Color(0xFFF5F6F8);
+    const corTexto = Color(0xFFD0D5DE);
+    const corSecundaria = Color(0xFFB8C0CA);
+    const corAzul = Color(0xFF42A5F5);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -159,17 +165,21 @@ class _TelaOcorrenciasState extends State<TelaOcorrencias> {
             style: TextStyle(
               fontSize: 26,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF142B49),
+              color: corTitulo,
             ),
           ),
           const SizedBox(height: 8),
           const Text(
             'Cadastre e acompanhe problemas da cidade.',
-            style: TextStyle(fontSize: 14, color: Colors.grey),
+            style: TextStyle(fontSize: 14, color: corTexto),
           ),
           const SizedBox(height: 24),
           Card(
+            color: corCartao,
             elevation: 3,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Form(
@@ -179,12 +189,17 @@ class _TelaOcorrenciasState extends State<TelaOcorrencias> {
                   children: [
                     const Text(
                       'Tipo de ocorrencia',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: corTitulo,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
                       key: ValueKey(tipoSelecionado),
                       initialValue: tipoSelecionado,
+                      dropdownColor: corCartao,
+                      style: const TextStyle(color: corTitulo, fontSize: 16),
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         hintText: 'Selecione o tipo',
@@ -209,12 +224,17 @@ class _TelaOcorrenciasState extends State<TelaOcorrencias> {
                     const SizedBox(height: 20),
                     const Text(
                       'Bairro',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: corTitulo,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: bairroController,
                       enabled: !salvando && !carregando,
+                      style: const TextStyle(color: corTitulo),
+                      cursorColor: corAzul,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         hintText: 'Digite o bairro',
@@ -229,13 +249,18 @@ class _TelaOcorrenciasState extends State<TelaOcorrencias> {
                     const SizedBox(height: 20),
                     const Text(
                       'Descricao',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: corTitulo,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: descricaoController,
                       enabled: !salvando && !carregando,
                       maxLines: 4,
+                      style: const TextStyle(color: corTitulo),
+                      cursorColor: corAzul,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         hintText: 'Descreva o problema identificado',
@@ -264,9 +289,12 @@ class _TelaOcorrenciasState extends State<TelaOcorrencias> {
                           salvando ? 'Salvando...' : 'Registrar ocorrencia',
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          foregroundColor: Colors.white,
+                          backgroundColor: corAzul,
+                          foregroundColor: const Color(0xFF17191E),
                           padding: const EdgeInsets.all(16),
+                          textStyle: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
@@ -281,7 +309,7 @@ class _TelaOcorrenciasState extends State<TelaOcorrencias> {
             style: const TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF142B49),
+              color: corTitulo,
             ),
           ),
           const SizedBox(height: 16),
@@ -289,13 +317,19 @@ class _TelaOcorrenciasState extends State<TelaOcorrencias> {
             const Center(child: CircularProgressIndicator())
           else if (ocorrencias.isEmpty)
             const Card(
+              color: corCartao,
               child: Padding(
                 padding: EdgeInsets.all(20),
                 child: Row(
                   children: [
-                    Icon(Icons.info_outline, color: Colors.blue),
+                    Icon(Icons.info_outline, color: corAzul),
                     SizedBox(width: 12),
-                    Expanded(child: Text('Nenhuma ocorrencia registrada.')),
+                    Expanded(
+                      child: Text(
+                        'Nenhuma ocorrencia registrada.',
+                        style: TextStyle(color: corTexto),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -312,7 +346,11 @@ class _TelaOcorrenciasState extends State<TelaOcorrencias> {
                 final ocorrencia = ocorrencias[index];
 
                 return Card(
+                  color: corCartao,
                   elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
@@ -320,7 +358,7 @@ class _TelaOcorrenciasState extends State<TelaOcorrencias> {
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.assignment, color: Colors.blue),
+                            const Icon(Icons.assignment, color: corAzul),
                             const SizedBox(width: 10),
                             Expanded(
                               child: Text(
@@ -328,6 +366,7 @@ class _TelaOcorrenciasState extends State<TelaOcorrencias> {
                                 style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
+                                  color: corTitulo,
                                 ),
                               ),
                             ),
@@ -337,22 +376,28 @@ class _TelaOcorrenciasState extends State<TelaOcorrencias> {
                                   : () => excluirOcorrencia(index),
                               icon: const Icon(
                                 Icons.delete_outline,
-                                color: Colors.red,
+                                color: Color(0xFFFF6B6B),
                               ),
                               tooltip: 'Excluir ocorrencia',
                             ),
                           ],
                         ),
                         const SizedBox(height: 8),
-                        Text('Bairro: ${ocorrencia['bairro']}'),
+                        Text(
+                          'Bairro: ${ocorrencia['bairro']}',
+                          style: const TextStyle(color: corTexto),
+                        ),
                         const SizedBox(height: 8),
-                        Text('Descricao: ${ocorrencia['descricao']}'),
+                        Text(
+                          'Descricao: ${ocorrencia['descricao']}',
+                          style: const TextStyle(color: corTexto),
+                        ),
                         const SizedBox(height: 8),
                         Text(
                           'Data: ${ocorrencia['data']}',
                           style: const TextStyle(
                             fontSize: 12,
-                            color: Colors.grey,
+                            color: corSecundaria,
                           ),
                         ),
                       ],

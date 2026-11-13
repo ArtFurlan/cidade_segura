@@ -6,6 +6,11 @@ import '../models/alerta.dart';
 import '../providers/clima_provider.dart';
 import '../services/alerta_service.dart';
 
+const corCartaoAlerta = Color(0xFF292D35);
+const corTituloAlerta = Color(0xFFF5F6F8);
+const corTextoAlerta = Color(0xFFD0D5DE);
+const corSecundariaAlerta = Color(0xFFB8C0CA);
+
 class TelaAlertas extends StatelessWidget {
   const TelaAlertas({super.key});
 
@@ -67,18 +72,18 @@ class TelaAlertas extends StatelessWidget {
             style: TextStyle(
               fontSize: 26,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF142B49),
+              color: corTituloAlerta,
             ),
           ),
           const SizedBox(height: 8),
           const Text(
             'Situacoes identificadas a partir dos indicadores.',
-            style: TextStyle(fontSize: 14, color: Colors.grey),
+            style: TextStyle(fontSize: 14, color: corTextoAlerta),
           ),
           const SizedBox(height: 8),
           const Text(
             'Dados simulados e dados meteorologicos da Open-Meteo',
-            style: TextStyle(fontSize: 12, color: Colors.blueGrey),
+            style: TextStyle(fontSize: 12, color: corSecundariaAlerta),
           ),
           const SizedBox(height: 24),
           const Text(
@@ -86,26 +91,28 @@ class TelaAlertas extends StatelessWidget {
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF142B49),
+              color: corTituloAlerta,
             ),
           ),
           const SizedBox(height: 8),
           const Text(
             'Indicadores simulados que ultrapassaram os limites definidos.',
-            style: TextStyle(fontSize: 13, color: Colors.grey),
+            style: TextStyle(fontSize: 13, color: corTextoAlerta),
           ),
           const SizedBox(height: 16),
           if (alertasAtuais.isEmpty)
             const Card(
+              color: corCartaoAlerta,
               child: Padding(
                 padding: EdgeInsets.all(20),
                 child: Row(
                   children: [
-                    Icon(Icons.check_circle_outline, color: Colors.green),
+                    Icon(Icons.check_circle_outline, color: Color(0xFF66BB6A)),
                     SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         'Nenhum indicador ultrapassou os limites definidos.',
+                        style: TextStyle(color: corTextoAlerta),
                       ),
                     ),
                   ],
@@ -120,18 +127,18 @@ class TelaAlertas extends StatelessWidget {
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF142B49),
+              color: corTituloAlerta,
             ),
           ),
           const SizedBox(height: 8),
           const Text(
             'Analise da temperatura e umidade atuais da Open-Meteo.',
-            style: TextStyle(fontSize: 13, color: Colors.grey),
+            style: TextStyle(fontSize: 13, color: corTextoAlerta),
           ),
           const SizedBox(height: 8),
           Text(
             'Ultima consulta: ${climaProvider.horarioAtualizacaoClima}',
-            style: const TextStyle(fontSize: 12, color: Colors.blueGrey),
+            style: const TextStyle(fontSize: 12, color: corSecundariaAlerta),
           ),
           const SizedBox(height: 16),
           if (climaProvider.carregando && !climaDisponivel)
@@ -143,6 +150,7 @@ class TelaAlertas extends StatelessWidget {
             )
           else if (!climaValido)
             Card(
+              color: corCartaoAlerta,
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Column(
@@ -150,13 +158,14 @@ class TelaAlertas extends StatelessWidget {
                   children: [
                     const Row(
                       children: [
-                        Icon(Icons.warning_amber, color: Colors.orange),
+                        Icon(Icons.warning_amber, color: Color(0xFFFFB74D)),
                         SizedBox(width: 12),
                         Expanded(
                           child: Text(
                             'Dados climaticos indisponiveis ou '
                             'desatualizados. A analise de alertas '
                             'meteorologicos foi suspensa.',
+                            style: TextStyle(color: corTextoAlerta),
                           ),
                         ),
                       ],
@@ -166,13 +175,20 @@ class TelaAlertas extends StatelessWidget {
                       Text(
                         'Ultima temperatura recebida: '
                         '${temperatura.toStringAsFixed(1)} C',
+                        style: const TextStyle(color: corTextoAlerta),
                       ),
                       const SizedBox(height: 8),
-                      Text('Ultima umidade recebida: $umidade%'),
+                      Text(
+                        'Ultima umidade recebida: $umidade%',
+                        style: const TextStyle(color: corTextoAlerta),
+                      ),
                       const SizedBox(height: 12),
                       const Text(
                         'Esses valores sao apenas referencia historica.',
-                        style: TextStyle(fontSize: 12, color: Colors.blueGrey),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: corSecundariaAlerta,
+                        ),
                       ),
                       const SizedBox(height: 12),
                     ],
@@ -195,6 +211,7 @@ class TelaAlertas extends StatelessWidget {
             )
           else if (alertasClimaticos.isEmpty)
             Card(
+              color: corCartaoAlerta,
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Column(
@@ -202,11 +219,15 @@ class TelaAlertas extends StatelessWidget {
                   children: [
                     const Row(
                       children: [
-                        Icon(Icons.check_circle_outline, color: Colors.green),
+                        Icon(
+                          Icons.check_circle_outline,
+                          color: Color(0xFF66BB6A),
+                        ),
                         SizedBox(width: 12),
                         Expanded(
                           child: Text(
                             'Nenhum limite meteorologico foi ultrapassado.',
+                            style: TextStyle(color: corTextoAlerta),
                           ),
                         ),
                       ],
@@ -214,13 +235,20 @@ class TelaAlertas extends StatelessWidget {
                     const SizedBox(height: 12),
                     Text(
                       'Temperatura atual: ${temperatura.toStringAsFixed(1)} C',
+                      style: const TextStyle(color: corTextoAlerta),
                     ),
                     const SizedBox(height: 8),
-                    Text('Umidade atual: $umidade%'),
+                    Text(
+                      'Umidade atual: $umidade%',
+                      style: const TextStyle(color: corTextoAlerta),
+                    ),
                     const SizedBox(height: 12),
                     const Text(
                       'Isso nao significa ausencia de outros riscos climaticos.',
-                      style: TextStyle(fontSize: 12, color: Colors.blueGrey),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: corSecundariaAlerta,
+                      ),
                     ),
                   ],
                 ),
@@ -234,18 +262,18 @@ class TelaAlertas extends StatelessWidget {
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF142B49),
+              color: corTituloAlerta,
             ),
           ),
           const SizedBox(height: 8),
           const Text(
             'Precipitacao prevista pela Open-Meteo para Sao Paulo.',
-            style: TextStyle(fontSize: 13, color: Colors.grey),
+            style: TextStyle(fontSize: 13, color: corTextoAlerta),
           ),
           const SizedBox(height: 8),
           Text(
             'Ultima consulta: ${climaProvider.horarioAtualizacaoPrevisao}',
-            style: const TextStyle(fontSize: 12, color: Colors.blueGrey),
+            style: const TextStyle(fontSize: 12, color: corSecundariaAlerta),
           ),
           const SizedBox(height: 16),
           if (climaProvider.carregandoPrevisao && !previsaoDisponivel)
@@ -257,6 +285,7 @@ class TelaAlertas extends StatelessWidget {
             )
           else if (!previsaoValida)
             Card(
+              color: corCartaoAlerta,
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Column(
@@ -264,13 +293,14 @@ class TelaAlertas extends StatelessWidget {
                   children: [
                     const Row(
                       children: [
-                        Icon(Icons.warning_amber, color: Colors.orange),
+                        Icon(Icons.warning_amber, color: Color(0xFFFFB74D)),
                         SizedBox(width: 12),
                         Expanded(
                           child: Text(
                             'Previsao de chuva indisponivel ou '
                             'desatualizada. Os alertas de chuva '
                             'foram suspensos ate uma nova consulta.',
+                            style: TextStyle(color: corTextoAlerta),
                           ),
                         ),
                       ],
@@ -279,7 +309,10 @@ class TelaAlertas extends StatelessWidget {
                     const Text(
                       'Uma previsao antiga nao deve ser tratada '
                       'como uma previsao atual.',
-                      style: TextStyle(fontSize: 12, color: Colors.blueGrey),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: corSecundariaAlerta,
+                      ),
                     ),
                     const SizedBox(height: 12),
                     ElevatedButton.icon(
@@ -301,6 +334,7 @@ class TelaAlertas extends StatelessWidget {
             )
           else ...[
             Card(
+              color: corCartaoAlerta,
               elevation: 2,
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -312,24 +346,33 @@ class TelaAlertas extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        color: corTituloAlerta,
                       ),
                     ),
                     const SizedBox(height: 12),
                     Text(
                       'Chuva acumulada prevista: '
                       '${chuvaAcumulada.toStringAsFixed(1)} mm',
+                      style: const TextStyle(color: corTextoAlerta),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'Maior precipitacao horaria prevista: '
                       '${maiorChuvaHoraria.toStringAsFixed(1)} mm',
+                      style: const TextStyle(color: corTextoAlerta),
                     ),
                     const SizedBox(height: 8),
-                    Text('Horas analisadas: $horasAnalisadas'),
+                    Text(
+                      'Horas analisadas: $horasAnalisadas',
+                      style: const TextStyle(color: corTextoAlerta),
+                    ),
                     const SizedBox(height: 12),
                     const Text(
                       'Fonte: Open-Meteo. Previsoes podem mudar.',
-                      style: TextStyle(fontSize: 12, color: Colors.blueGrey),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: corSecundariaAlerta,
+                      ),
                     ),
                   ],
                 ),
@@ -338,16 +381,21 @@ class TelaAlertas extends StatelessWidget {
             const SizedBox(height: 16),
             if (alertasChuva.isEmpty)
               const Card(
+                color: corCartaoAlerta,
                 child: Padding(
                   padding: EdgeInsets.all(20),
                   child: Row(
                     children: [
-                      Icon(Icons.check_circle_outline, color: Colors.green),
+                      Icon(
+                        Icons.check_circle_outline,
+                        color: Color(0xFF66BB6A),
+                      ),
                       SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           'A chuva acumulada prevista nao ultrapassou '
                           'os limites ilustrativos definidos.',
+                          style: TextStyle(color: corTextoAlerta),
                         ),
                       ),
                     ],
@@ -363,22 +411,24 @@ class TelaAlertas extends StatelessWidget {
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF142B49),
+              color: corTituloAlerta,
             ),
           ),
           const SizedBox(height: 8),
           const Text(
             'Estimativas para o proximo dia com base no mesmo '
             'historico simulado apresentado nos graficos.',
-            style: TextStyle(fontSize: 13, color: Colors.grey),
+            style: TextStyle(fontSize: 13, color: corTextoAlerta),
           ),
           const SizedBox(height: 16),
           if (alertasTendencia.isEmpty)
             const Card(
+              color: corCartaoAlerta,
               child: Padding(
                 padding: EdgeInsets.all(20),
                 child: Text(
                   'Nenhuma tendencia ultrapassou os limites definidos.',
+                  style: TextStyle(color: corTextoAlerta),
                 ),
               ),
             )
@@ -389,7 +439,7 @@ class TelaAlertas extends StatelessWidget {
             'Os alertas apoiam a analise humana. '
             'Os limites sao ilustrativos e as previsoes podem mudar. '
             'Nenhuma decisao de alto impacto deve ser automatizada.',
-            style: TextStyle(fontSize: 12, color: Colors.blueGrey),
+            style: TextStyle(fontSize: 12, color: corSecundariaAlerta),
           ),
         ],
       ),
@@ -426,11 +476,11 @@ class CartaoAlerta extends StatelessWidget {
   Color get cor {
     switch (alerta.nivel) {
       case NivelRisco.baixo:
-        return Colors.green;
+        return const Color(0xFF66BB6A);
       case NivelRisco.medio:
-        return Colors.orange;
+        return const Color(0xFFFFB74D);
       case NivelRisco.alto:
-        return Colors.red;
+        return const Color(0xFFFF6B6B);
     }
   }
 
@@ -463,7 +513,9 @@ class CartaoAlerta extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      color: corCartaoAlerta,
       elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -479,6 +531,7 @@ class CartaoAlerta extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
+                      color: corTituloAlerta,
                     ),
                   ),
                 ),
@@ -499,19 +552,34 @@ class CartaoAlerta extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            Text('Nivel de risco: ${alerta.nivelTexto}'),
+            Text(
+              'Nivel de risco: ${alerta.nivelTexto}',
+              style: const TextStyle(color: corTextoAlerta),
+            ),
             const SizedBox(height: 8),
-            Text('Confianca: ${alerta.confiancaTexto}'),
+            Text(
+              'Confianca: ${alerta.confiancaTexto}',
+              style: const TextStyle(color: corTextoAlerta),
+            ),
             const SizedBox(height: 8),
-            Text('Justificativa: ${alerta.justificativa}'),
+            Text(
+              'Justificativa: ${alerta.justificativa}',
+              style: const TextStyle(color: corTextoAlerta),
+            ),
             const SizedBox(height: 8),
-            Text('Limitacao: ${alerta.limitacao}'),
+            Text(
+              'Limitacao: ${alerta.limitacao}',
+              style: const TextStyle(color: corTextoAlerta),
+            ),
             const SizedBox(height: 8),
-            Text('Recomendacao: ${alerta.recomendacao}'),
+            Text(
+              'Recomendacao: ${alerta.recomendacao}',
+              style: const TextStyle(color: corTextoAlerta),
+            ),
             const SizedBox(height: 12),
             Text(
               'Fonte: ${alerta.fonte}',
-              style: const TextStyle(fontSize: 12, color: Colors.blueGrey),
+              style: const TextStyle(fontSize: 12, color: corSecundariaAlerta),
             ),
           ],
         ),

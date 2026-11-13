@@ -98,19 +98,19 @@ class TelaInicio extends StatelessWidget {
             style: TextStyle(
               fontSize: 26,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF142B49),
+              color: Color(0xFFF5F6F8),
             ),
           ),
           const SizedBox(height: 8),
           const Text(
             'Monitoramento territorial de Sao Paulo.',
-            style: TextStyle(fontSize: 14, color: Colors.grey),
+            style: TextStyle(fontSize: 14, color: Color(0xFFD0D5DE)),
           ),
           const SizedBox(height: 8),
           const Text(
             'Agua e energia: simulados. '
             'Clima e previsao: Open-Meteo.',
-            style: TextStyle(fontSize: 12, color: Colors.blueGrey),
+            style: TextStyle(fontSize: 12, color: Color(0xFFB8C0CA)),
           ),
           const SizedBox(height: 24),
           LayoutBuilder(
@@ -131,7 +131,7 @@ class TelaInicio extends StatelessWidget {
                       valor: '${consumoAgua.toStringAsFixed(0)} m3',
                       descricao: 'Simulado - ultimas 24 horas',
                       icone: Icons.water_drop,
-                      cor: Colors.blue,
+                      cor: const Color(0xFF42A5F5),
                     ),
                   ),
                   SizedBox(
@@ -141,7 +141,7 @@ class TelaInicio extends StatelessWidget {
                       valor: '${consumoEnergia.toStringAsFixed(0)} kWh',
                       descricao: 'Simulado - ultimas 24 horas',
                       icone: Icons.bolt,
-                      cor: Colors.orange,
+                      cor: const Color(0xFFFFB74D),
                     ),
                   ),
                   SizedBox(
@@ -151,7 +151,7 @@ class TelaInicio extends StatelessWidget {
                       valor: temperatura,
                       descricao: descricaoClima,
                       icone: Icons.thermostat,
-                      cor: Colors.deepOrange,
+                      cor: const Color(0xFFFF7043),
                     ),
                   ),
                   SizedBox(
@@ -161,7 +161,7 @@ class TelaInicio extends StatelessWidget {
                       valor: umidade,
                       descricao: descricaoClima,
                       icone: Icons.cloud,
-                      cor: Colors.teal,
+                      cor: const Color(0xFF26A69A),
                     ),
                   ),
                   SizedBox(
@@ -171,7 +171,7 @@ class TelaInicio extends StatelessWidget {
                       valor: '$totalAlertas',
                       descricao: descricaoAlertas,
                       icone: Icons.warning_amber,
-                      cor: Colors.red,
+                      cor: const Color(0xFFFF5252),
                     ),
                   ),
                 ],
@@ -220,7 +220,9 @@ class CartaoIndicador extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      color: const Color(0xFF292D35),
       elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: SizedBox(
         height: 170,
         child: Padding(
@@ -232,7 +234,7 @@ class CartaoIndicador extends StatelessWidget {
               Icon(icone, color: cor, size: 28),
               Text(
                 titulo,
-                style: const TextStyle(fontSize: 13, color: Colors.grey),
+                style: const TextStyle(fontSize: 13, color: Color(0xFFD0D5DE)),
               ),
               FittedBox(
                 fit: BoxFit.scaleDown,
@@ -242,13 +244,13 @@ class CartaoIndicador extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 23,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF142B49),
+                    color: Color(0xFFF5F6F8),
                   ),
                 ),
               ),
               Text(
                 descricao,
-                style: const TextStyle(fontSize: 11, color: Colors.grey),
+                style: const TextStyle(fontSize: 11, color: Color(0xFFB8C0CA)),
               ),
             ],
           ),
