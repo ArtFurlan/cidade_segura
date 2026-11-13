@@ -173,7 +173,53 @@ class _TelaOcorrenciasState extends State<TelaOcorrencias> {
             'Cadastre e acompanhe problemas da cidade.',
             style: TextStyle(fontSize: 14, color: corTexto),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
+          Card(
+            color: corCartao,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: const BorderSide(color: Color(0xFF414752)),
+            ),
+            child: const Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.shield_outlined, color: corAzul, size: 24),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Privacidade dos registros',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: corTitulo,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 12),
+                  Text(
+                    'As ocorrencias ficam armazenadas neste dispositivo '
+                    'e nao sao enviadas a um servidor pelo aplicativo.',
+                    style: TextStyle(fontSize: 13, color: corTexto),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Evite informar nomes completos, telefones, '
+                    'enderecos residenciais ou outros dados pessoais '
+                    'na descricao.',
+                    style: TextStyle(fontSize: 12, color: corSecundaria),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
           Card(
             color: corCartao,
             elevation: 3,

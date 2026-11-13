@@ -115,10 +115,24 @@ class TelaInicio extends StatelessWidget {
           const SizedBox(height: 24),
           LayoutBuilder(
             builder: (context, constraints) {
-              final colunas = constraints.maxWidth < 600 ? 2 : 3;
+              final larguraDisponivel = constraints.maxWidth;
+
+              final escalaFonte = MediaQuery.textScalerOf(context).scale(1.0);
+
+              final larguraAjustada = larguraDisponivel / escalaFonte;
+
+              final int colunas;
+
+              if (larguraAjustada < 280) {
+                colunas = 1;
+              } else if (larguraAjustada < 600) {
+                colunas = 2;
+              } else {
+                colunas = 3;
+              }
 
               final largura =
-                  (constraints.maxWidth - (colunas - 1) * 12) / colunas;
+                  (larguraDisponivel - (colunas - 1) * 12) / colunas;
 
               return Wrap(
                 spacing: 12,
@@ -195,6 +209,7 @@ class TelaInicio extends StatelessWidget {
                   : 'Atualizar clima',
             ),
           ),
+          const SizedBox(height: 12),
         ],
       ),
     );
@@ -223,31 +238,29 @@ class CartaoIndicador extends StatelessWidget {
       color: const Color(0xFF292D35),
       elevation: 3,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: SizedBox(
-        height: 170,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 170),
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Icon(icone, color: cor, size: 28),
+              const SizedBox(height: 12),
               Text(
                 titulo,
                 style: const TextStyle(fontSize: 13, color: Color(0xFFD0D5DE)),
               ),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  valor,
-                  style: const TextStyle(
-                    fontSize: 23,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFFF5F6F8),
-                  ),
+              const SizedBox(height: 12),
+              Text(
+                valor,
+                style: const TextStyle(
+                  fontSize: 23,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFF5F6F8),
                 ),
               ),
+              const SizedBox(height: 12),
               Text(
                 descricao,
                 style: const TextStyle(fontSize: 11, color: Color(0xFFB8C0CA)),
